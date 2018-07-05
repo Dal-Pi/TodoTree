@@ -28,6 +28,8 @@ public class CheckListFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
 
+    private MyItemRecyclerViewAdapter mAdapter;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -68,8 +70,9 @@ public class CheckListFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(
-                    TodoProvider.getInstance().getAllTodos(), mListener));
+            mAdapter = new MyItemRecyclerViewAdapter(
+                    TodoProvider.getInstance().getAllTodos(), mListener);
+            recyclerView.setAdapter(mAdapter);
         }
         return view;
     }
