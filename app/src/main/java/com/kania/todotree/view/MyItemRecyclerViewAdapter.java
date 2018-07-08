@@ -22,150 +22,133 @@ import java.util.List;
  * TODO: Replace the implementation with code for your data type.
  */
 public class MyItemRecyclerViewAdapter
-        extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.AbstractTodoListItemViewHolder> {
+        extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.TodoViewHolder> {
 
-    public final int VIEW_TYPE_ITEM = 1;
-    public final int VIEW_TYPE_SELECTED = 2;
-
-    private final List<TodoData> mValues;
+    public static final int NO_ITEM_SELECTED = -100;
+    private final List<TodoData> mItems;
     private final OnListFragmentInteractionListener mListener;
 
+    private int mSelectedPos;
+
     public MyItemRecyclerViewAdapter(List<TodoData> items, OnListFragmentInteractionListener listener) {
-        mValues = items;
+        mItems = items;
         mListener = listener;
+        mSelectedPos = NO_ITEM_SELECTED;
     }
 
     @Override
-    public AbstractTodoListItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view;
-        if (viewType == VIEW_TYPE_SELECTED) {
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.selected_item, parent, false);
-            return new SelectMenuViewHolder(view);
-        } else {// viewType == VIEW_TYPE_ITEM
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.fragment_item, parent, false);
-            return new ItemViewHolder(view);
-        }
+    public long getItemId(int position) {
+        return mItems.get(position).getId();
     }
 
     @Override
-    public void onBindViewHolder(final AbstractTodoListItemViewHolder holder, int position) {
-        TodoData todo = mValues.get(position);
+    public TodoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.todo_list_item, parent, false);
+        return new TodoViewHolder(view);
+    }
 
-        holder.setItem(todo);
-
-        /*
+    @Override
+    public void onBindViewHolder(final TodoViewHolder holder, final int position) {
+        TodoData todo = mItems.get(position);
         holder.mItem = todo;
-        holder.mCheckBox.setChecked(todo.isCompleted());
-        int color = todo.getSubject().getColor();
-        ViewUtil.setCheckBoxColor(holder.mCheckBox, color, color);
-        holder.mContentView.setText(mValues.get(position).getName());
-        holder.mContentView.setTextColor(color);
-        ViewUtil.setIndentation(holder.mView, todo.getDepth());
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
+        decorateTodoItem(holder, todo);
+
+        holder.mContentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (null != mListener) {
+                    //TODO debug
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
                     mListener.onListFragmentInteraction(holder.mItem);
 
-                    TodoProvider provider = TodoProvider.getInstance();
-                    provider.select(holder.mItem.getId());
+                    select(holder);
                 }
             }
         });
-        */
+    }
+
+    private void decorateTodoItem(final TodoViewHolder holder, TodoData todo) {
+        holder.mDivider.setVisibility(todo.getDepth() == 0 ? View.VISIBLE : View.GONE);
+        holder.mCheckBox.setChecked(todo.isCompleted());
+        int color = todo.getSubject().getColor();
+        ViewUtil.setCheckBoxColor(holder.mCheckBox, color, color);
+        holder.mName.setText(todo.getName());
+        holder.mName.setTextColor(color);
+        ViewUtil.setIndentation(holder.mView, todo.getDepth());
+
+        holder.mIdDebug.setText(todo.getId() + " selected");
+        holder.mIdDebug.setTextColor(color);
+
+        if (TodoProvider.getInstance().getSelected() == todo.getId()) {
+            holder.mMenuLayout.setVisibility(View.VISIBLE);
+        } else {
+            holder.mMenuLayout.setVisibility(View.GONE);
+        }
+    }
+
+    private void select(final TodoViewHolder holder) {
+        int position = holder.getAdapterPosition();
+        Log.d("todo_tree", "[MyItemRecyclerViewAdapter] selected pos : " + holder.getAdapterPosition()
+                + ", id = " + holder.mItem.getId());
+
+        TodoProvider.getInstance().select(holder.mItem.getId());
+
+        if (mSelectedPos == NO_ITEM_SELECTED) {
+            mSelectedPos = position;
+            notifyItemChanged(position);
+        } else {
+            if (mSelectedPos != position) {
+                int prev = mSelectedPos;
+                mSelectedPos = position;
+                notifyItemChanged(prev);
+                notifyItemChanged(position);
+            } else {
+                int prev = mSelectedPos;
+                mSelectedPos = NO_ITEM_SELECTED;
+                notifyItemChanged(prev);
+            }
+        }
     }
 
     @Override
     public int getItemCount() {
-        return mValues.size();
+        return mItems.size();
     }
 
-    public abstract class AbstractTodoListItemViewHolder extends RecyclerView.ViewHolder {
-        public AbstractTodoListItemViewHolder(View itemView) {
-            super(itemView);
-        }
-        public abstract void setItem(TodoData todo);
-    }
-
-    public class ItemViewHolder extends AbstractTodoListItemViewHolder {
+    public class TodoViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
+
+        public final View mDivider;
+
+        public final View mContentLayout;
         public final AppCompatCheckBox mCheckBox;
-        public final TextView mContentView;
+        public final TextView mName;
+
+        public final View mMenuLayout;
+        public final TextView mIdDebug;
+
         public TodoData mItem;
 
-        public ItemViewHolder(View view) {
+        public TodoViewHolder(View view) {
             super(view);
             mView = view;
-            mCheckBox = view.findViewById(R.id.item_checkbox);
-            mContentView =  view.findViewById(R.id.content);
-        }
 
-        @Override
-        public void setItem(TodoData todo) {
-            mItem = todo;
-            mCheckBox.setChecked(todo.isCompleted());
-            int color = todo.getSubject().getColor();
-            ViewUtil.setCheckBoxColor(mCheckBox, color, color);
-            mContentView.setText(todo.getName());
-            mContentView.setTextColor(color);
-            ViewUtil.setIndentation(mView, todo.getDepth());
+            mDivider = view.findViewById(R.id.item_divider);
 
-            mView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (null != mListener) {
-                        // Notify the active callbacks interface (the activity, if the
-                        // fragment is attached to one) that an item has been selected.
-                        mListener.onListFragmentInteraction(mItem);
+            mContentLayout = view.findViewById(R.id.item_layout_content);
+            mCheckBox = view.findViewById(R.id.item_checkbox_todo);
+            mName =  view.findViewById(R.id.item_text_name);
 
-                        TodoProvider.getInstance().select(mItem.getId());
-                        notifyDataSetChanged();
-                    }
-                }
-            });
+            mMenuLayout = view.findViewById(R.id.item_layout_select_menu);
+            mIdDebug =  view.findViewById(R.id.item_text_selected_id_debug);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + mName.getText() + "'";
         }
-    }
-
-    public class SelectMenuViewHolder extends AbstractTodoListItemViewHolder {
-        public final View mView;
-        public final TextView mContentView;
-        public TodoData mItem;
-
-        public SelectMenuViewHolder(View view) {
-            super(view);
-            mView = view;
-            mContentView = view.findViewById(R.id.text_selected_id);
-        }
-
-        @Override
-        public void setItem(TodoData todo) {
-            mItem = todo;
-            mContentView.setText(todo.getId() + " selected");
-            mContentView.setTextColor(todo.getSubject().getColor());
-        }
-
-        @Override
-        public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
-        }
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        Log.d("todotree", "getItemViewType, pos = " + TodoProvider.getInstance().getSelected());
-        if (position == TodoProvider.getInstance().getSelected())
-            return VIEW_TYPE_SELECTED;
-        else
-            return VIEW_TYPE_ITEM;
     }
 }

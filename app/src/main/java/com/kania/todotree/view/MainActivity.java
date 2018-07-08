@@ -8,7 +8,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.kania.todotree.R;
 import com.kania.todotree.data.TodoData;
@@ -56,6 +55,6 @@ public class MainActivity extends AppCompatActivity implements CheckListFragment
 
     @Override
     public void onListFragmentInteraction(TodoData item) {
-        Toast.makeText(this, item.getName(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, item.getName(), Toast.LENGTH_SHORT).show();
     }
 }

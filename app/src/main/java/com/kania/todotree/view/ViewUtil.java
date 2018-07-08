@@ -94,8 +94,8 @@ public class ViewUtil {
     public static void setIndentation (View v, int depth) {
         if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
             ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-            p.setMargins(p.leftMargin + (depth * 50),
-                    p.topMargin, p.rightMargin, p.bottomMargin);
+            int newLeftMargin = /*p.rightMargin + */(depth * 50); // right never changed
+            p.setMargins(newLeftMargin, p.topMargin, p.rightMargin, p.bottomMargin);
             v.requestLayout();
         }
     }
