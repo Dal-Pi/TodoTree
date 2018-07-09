@@ -7,9 +7,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/text_margin"
-        android:layout_marginEnd="@dimen/text_margin"
-        android:layout_marginBottom="@dimen/text_margin"
+        android:layout_marginStart="@dimen/todo_item_margin_padding"
+        android:layout_marginEnd="@dimen/todo_item_margin_padding"
+        android:layout_marginBottom="@dimen/todo_item_margin_padding"
         android:orientation="vertical">
         <View
             android:id="@+id/item_divider"
@@ -21,15 +21,15 @@
             android:id="@+id/item_layout_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/text_margin"
+            android:layout_marginTop="@dimen/todo_item_margin_padding"
             android:orientation="horizontal">
             <android.support.v7.widget.AppCompatCheckBox
                 android:id="@+id/item_checkbox_todo"
                 android:layout_width="wrap_content"
                 android:layout_gravity="center"
-                android:paddingTop="@dimen/text_margin"
-                android:paddingBottom="@dimen/text_margin"
-                android:paddingLeft="@dimen/text_margin"
+                android:paddingTop="@dimen/todo_item_margin_padding"
+                android:paddingBottom="@dimen/todo_item_margin_padding"
+                android:paddingLeft="@dimen/todo_item_margin_padding"
 
                 android:layout_height="wrap_content" />
             <TextView
@@ -39,26 +39,49 @@
                 android:layout_gravity="center"
                 android:layout_marginStart="@dimen/text_margin"
                 android:layout_marginEnd="@dimen/text_margin"
-                android:paddingTop="@dimen/text_margin"
-                android:paddingBottom="@dimen/text_margin"
+                android:paddingTop="@dimen/todo_item_margin_padding"
+                android:paddingBottom="@dimen/todo_item_margin_padding"
                 android:textAppearance="?attr/textAppearanceListItem" />
         </LinearLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/item_layout_select_menu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:orientation="horizontal">
+            android:visibility="visible" >
+            <Button
+                android:id="@+id/item_btn_finish_todo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
+                android:text="@string/item_menu_finish_todo"/>
+            <Button
+                android:id="@+id/item_btn_add_sub_todo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/item_btn_finish_todo"
+                android:text="@string/item_menu_add_sub_todo"/>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/item_btn_add_sub_todo"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="@dimen/text_margin"
+                android:lines="1"
+                android:inputType="text" />
+
             <TextView
                 android:id="@+id/item_text_selected_id_debug"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/text_margin"
-                android:layout_marginRight="@dimen/text_margin"
-                android:layout_gravity="center"
-                android:gravity="center"
+                android:layout_marginStart="@dimen/text_margin"
+                android:layout_marginEnd="@dimen/text_margin"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
                 android:text="selected"/>
-        </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 </LinearLayout>

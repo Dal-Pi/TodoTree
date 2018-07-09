@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.kania.todotree.R;
@@ -129,6 +130,8 @@ public class MyItemRecyclerViewAdapter
 
         public final View mMenuLayout;
         public final TextView mIdDebug;
+        public final Button mAddSubTodo;
+        public final Button mFinishTodo;
 
         public TodoData mItem;
 
@@ -144,6 +147,8 @@ public class MyItemRecyclerViewAdapter
 
             mMenuLayout = view.findViewById(R.id.item_layout_select_menu);
             mIdDebug =  view.findViewById(R.id.item_text_selected_id_debug);
+            mAddSubTodo = view.findViewById(R.id.item_btn_add_sub_todo);
+            mFinishTodo = view.findViewById(R.id.item_btn_finish_todo);
         }
 
         @Override

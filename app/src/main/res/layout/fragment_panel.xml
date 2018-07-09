@@ -26,8 +26,7 @@
             android:layout_marginStart="@dimen/text_margin"
             android:layout_marginEnd="@dimen/text_margin"
             android:lines="1"
-            android:inputType="text"
-             />
+            android:inputType="text" />
         <Button
             android:id="@+id/panel_btn_simple_add"
             android:layout_width="wrap_content"
