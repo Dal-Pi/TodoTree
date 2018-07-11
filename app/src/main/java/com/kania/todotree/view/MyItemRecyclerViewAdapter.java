@@ -85,8 +85,10 @@ public class MyItemRecyclerViewAdapter
 
         if (TodoProvider.getInstance().getSelected() == todo.getId()) {
             holder.mMenuLayout.setVisibility(View.VISIBLE);
+            holder.mFinishTodo.setVisibility(View.VISIBLE);
         } else {
             holder.mMenuLayout.setVisibility(View.GONE);
+            holder.mFinishTodo.setVisibility(View.GONE);
         }
     }
 

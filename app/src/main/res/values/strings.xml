@@ -5,4 +5,6 @@
     <string name="simple_add">Add</string>
     <string name="item_menu_add_sub_todo">Add</string>
     <string name="item_menu_finish_todo">Finish</string>
+    <string name="item_due_date_defualt">Due Date</string>
+    <string name="item_last_update_defualt">Updated</string>
 </resources>
