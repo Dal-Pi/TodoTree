@@ -72,14 +72,16 @@ public class MyItemRecyclerViewAdapter
     }
 
     private void decorateTodoItem(final TodoViewHolder holder, TodoData todo) {
+        int color = todo.getSubject().getColor();
         holder.mDivider.setVisibility(todo.getDepth() == 0 ? View.VISIBLE : View.GONE);
         holder.mDueDate.setText(todo.getTargetDate() + ""); //TODO
         holder.mUpdated.setText(todo.getLastUpdated() + ""); //TODO
         holder.mCheckBox.setChecked(todo.isCompleted());
-        int color = todo.getSubject().getColor();
         ViewUtil.setCheckBoxColor(holder.mCheckBox, color, color);
         holder.mName.setText(todo.getName());
         holder.mName.setTextColor(color);
+        holder.mFinishTodo.setTextColor(color);
+        holder.mAddSubTodo.setTextColor(color);
         ViewUtil.setIndentation(holder.mView, todo.getDepth());
 
         holder.mIdDebug.setText(todo.getId() + " selected");
@@ -90,8 +92,10 @@ public class MyItemRecyclerViewAdapter
             holder.mFinishTodo.setVisibility(View.VISIBLE);
         } else {
             holder.mMenuLayout.setVisibility(View.GONE);
-            holder.mFinishTodo.setVisibility(View.GONE);
+            holder.mFinishTodo.setVisibility(View.INVISIBLE);
         }
+
+        holder.mDateLayout.setVisibility(View.GONE);
     }
 
     private void select(final TodoViewHolder holder) {
