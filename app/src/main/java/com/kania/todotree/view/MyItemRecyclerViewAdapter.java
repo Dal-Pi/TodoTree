@@ -73,6 +73,8 @@ public class MyItemRecyclerViewAdapter
 
     private void decorateTodoItem(final TodoViewHolder holder, TodoData todo) {
         holder.mDivider.setVisibility(todo.getDepth() == 0 ? View.VISIBLE : View.GONE);
+        holder.mDueDate.setText(todo.getTargetDate() + ""); //TODO
+        holder.mUpdated.setText(todo.getLastUpdated() + ""); //TODO
         holder.mCheckBox.setChecked(todo.isCompleted());
         int color = todo.getSubject().getColor();
         ViewUtil.setCheckBoxColor(holder.mCheckBox, color, color);
@@ -126,6 +128,10 @@ public class MyItemRecyclerViewAdapter
 
         public final View mDivider;
 
+        public final View mDateLayout;
+        public final TextView mDueDate;
+        public final TextView mUpdated;
+
         public final View mContentLayout;
         public final AppCompatCheckBox mCheckBox;
         public final TextView mName;
@@ -142,6 +148,10 @@ public class MyItemRecyclerViewAdapter
             mView = view;
 
             mDivider = view.findViewById(R.id.item_divider);
+
+            mDateLayout = view.findViewById(R.id.item_layout_date);
+            mDueDate = view.findViewById(R.id.item_text_due_date);
+            mUpdated = view.findViewById(R.id.item_text_last_updated);
 
             mContentLayout = view.findViewById(R.id.item_layout_content);
             mCheckBox = view.findViewById(R.id.item_checkbox_todo);
