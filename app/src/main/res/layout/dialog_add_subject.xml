@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        style="@style/TodoTreeDialogLayoutStyle"
+        android:orientation="vertical" >
+        <TextView
+            style="@style/TodoTreeDialogTitleStyle"
+            android:text="@string/dialog_add_subject_title_name" />
+        <EditText
+            style="@style/TodoTreeDialogEditStyle"
+            android:id="@+id/dialog_add_subject_edit_name"
+            android:hint="@string/dialog_add_todo_title_name" />
+        <TextView
+            style="@style/TodoTreeDialogTitleStyle"
+            android:text="@string/dialog_add_subject_title_color" />
+        <Spinner
+            android:id="@+id/dialog_add_subject_spinner_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:prompt="@string/dialog_add_todo_prompt_subject"/>
+    </LinearLayout>
+</LinearLayout>

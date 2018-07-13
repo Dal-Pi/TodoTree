@@ -12,6 +12,8 @@ public class TodoProvider {
 
     private ArrayList<TodoData> mTodoList;
     private HashMap<Integer, TodoData> mTodoMap;
+    private ArrayList<SubjectData> mSubjectList;
+    private HashMap<Integer, SubjectData> mSubjectMap;
     private int mSelected = NO_SELECTED;
 
     public static TodoProvider getInstance() {
@@ -22,9 +24,17 @@ public class TodoProvider {
     private TodoProvider() {
         mTodoList = new ArrayList<>();
         mTodoMap = new HashMap<>();
+        mSubjectList = new ArrayList<>();
+        mSubjectMap = new HashMap<>();
 
         //dummy data [start]
-        SubjectData sub1 = new SubjectData(1, "#FF9696E1");
+        SubjectData sub1 = new SubjectData(1, "subject_1", "#FF9696E1");
+        addSubject(sub1);
+        SubjectData sub2 = new SubjectData(2, "subject_2", "#FFB4D25A");
+        addSubject(sub2);
+        SubjectData sub3 = new SubjectData(3, "subject_3", "#FFFF7F7F");
+        addSubject(sub3);
+
         TodoData todo1_1 = new TodoData(1, sub1, "todo1_1", null,
         false, 0, 0, 0);
         addTodo(todo1_1);
@@ -38,7 +48,6 @@ public class TodoProvider {
                 true, 0, 0, 0);
         addTodo(todo4_1);
 
-        SubjectData sub2 = new SubjectData(2, "#FFB4D25A");
         TodoData todo5_1 = new TodoData(5, sub2, "todo5_1", null,
                 true, 0, 0, 0);
         addTodo(todo5_1);
@@ -49,7 +58,6 @@ public class TodoProvider {
                 false, 0, 0, 0);
         addTodo(todo6_1);
 
-        SubjectData sub3 = new SubjectData(3, "#FFFF7F7F");
         TodoData todo7_1 = new TodoData(8, sub3, "todo7_1", null,
                 true, 0, 0, 0);
         addTodo(todo7_1);
@@ -69,6 +77,11 @@ public class TodoProvider {
         //dummy data [end]
     }
 
+    private void addSubject(SubjectData subject) {
+        mSubjectList.add(subject);
+        mSubjectMap.put(subject.getId(), subject);
+    }
+
     private void addTodo(TodoData todo) {
         mTodoList.add(todo);
         mTodoMap.put(todo.getId(), todo);
@@ -76,6 +89,10 @@ public class TodoProvider {
 
     public ArrayList<TodoData> getAllTodo() {
         return mTodoList;
+    }
+
+    public ArrayList<SubjectData> getAllSubject() {
+        return mSubjectList;
     }
 
     public int getSelected() {

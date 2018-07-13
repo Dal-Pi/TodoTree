@@ -6,18 +6,27 @@ import java.util.ArrayList;
 
 public class SubjectData {
     private int mId;
+    private String mName;
     private String mColorString;
 
     private ArrayList<ITodoData> mListeners;
 
-    public SubjectData(int id, String color) {
+    public SubjectData(int id, String name, String color) {
         mId = id;
+        mName = name;
         mColorString = color;
 
         mListeners = new ArrayList<>();
     }
 
     int getId() { return mId; }
+
+    public String getName() {
+        return mName;
+    }
+    public void setName(String name) {
+        this.mName = name;
+    }
 
     public int getColor() {
         return Color.parseColor(mColorString);
@@ -33,7 +42,7 @@ public class SubjectData {
         mListeners.remove(listener);
     }
 
-    public void changeColor(String newColor) {
+    public void onColorChanged(String newColor) {
         mColorString = newColor;
         for (ITodoData listener : mListeners)
             listener.onColorUpdated(mColorString);

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="color_palette">
+        <item>#FFFF96E6</item>
+        <item>#FF9696E1</item>
+        <item>#FF4B6EE1</item>
+        <item>#FF41CDB9</item>
+        <item>#FFFF7F7F</item>
+        <item>#FF64DC73</item>
+        <item>#FFB4D25A</item>
+        <item>#FFCDBE46</item>
+        <item>#FFFFB446</item>
+        <item>#FF555555</item>
+    </string-array>
+</resources>

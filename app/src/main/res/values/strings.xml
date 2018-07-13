@@ -2,9 +2,32 @@
     <string name="app_name">TodoTree</string>
     <string name="action_settings">Settings</string>
 
-    <string name="simple_add">Add</string>
-    <string name="item_menu_add_sub_todo">Add</string>
+    <string name="base_add">Add</string>
+    <string name="base_cancel">Cancel</string>
+
+    <string name="item_menu_add_sub_todo">@string/base_add</string>
+    <string name="item_menu_add_sub_todo_hint">Input sub-todo title</string>
     <string name="item_menu_finish_todo">Finish</string>
     <string name="item_due_date_defualt">Due Date</string>
     <string name="item_last_update_defualt">Updated</string>
+
+    <string name="dialog_add_todo_title_subject">Subject</string>
+    <string name="dialog_add_todo_prompt_subject">Select Subject</string>
+    <string name="dialog_add_todo_title_name">Todo Name</string>
+    <string name="dialog_add_todo_hint_name">Input todo title</string>
+    <string name="dialog_add_todo_title_target_date">Due Date</string>
+    <string name="dialog_add_todo_btn_add">@string/base_add</string>
+    <string name="dialog_add_todo_btn_cancel">@string/base_cancel</string>
+
+    <string name="dialog_add_subject_title_name">Subject Name</string>
+    <string name="dialog_add_subject_hint_name">Input subject title</string>
+    <string name="dialog_add_subject_title_color">Color</string>
+    <string name="dialog_add_subject_btn_add">@string/base_add</string>
+    <string name="dialog_add_subject_btn_cancel">@string/base_cancel</string>
+
+    <string name="dialog_add_title_target_date_dummy">Click to select date</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

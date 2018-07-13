@@ -21,4 +21,21 @@
 
     </style>
 
+    <style name="TodoTreeDialogLayoutStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_margin">@dimen/text_margin</item>
+        <item name="android:focusableInTouchMode">true</item>
+    </style>
+    <style name="TodoTreeDialogTitleStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="TodoTreeDialogEditStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:lines">1</item>
+        <item name="android:inputType">text</item>
+    </style>
+
 </resources>

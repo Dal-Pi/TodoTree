@@ -13,15 +13,9 @@ import com.kania.todotree.R;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
 import com.kania.todotree.view.CheckListFragment.OnListFragmentInteractionListener;
-import com.kania.todotree.view.dummy.DummyContent.DummyItem;
 
 import java.util.List;
 
-/**
- * {@link RecyclerView.Adapter} that can display a {@link DummyItem} and makes a call to the
- * specified {@link OnListFragmentInteractionListener}.
- * TODO: Replace the implementation with code for your data type.
- */
 public class MyItemRecyclerViewAdapter
         extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.TodoViewHolder> {
 
