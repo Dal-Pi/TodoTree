@@ -10,15 +10,20 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kania.todotree.R;
+import com.kania.todotree.data.RequestSubjectData;
 import com.kania.todotree.data.SubjectData;
+import com.kania.todotree.data.TodoProvider;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,35 +34,42 @@ import com.kania.todotree.data.SubjectData;
  * create an instance of this fragment.
  */
 public class AddSubjectDialog extends DialogFragment {
-    private OnCompleteAddSubject mListener;
+    private static final String ARG_BASE_SUBJECT_ID = "baseSubjectId";
+    private int mBaseSubjectId;
+    //private OnCompleteAddSubject mListener;
+
+    private EditText mEditName;
+    private Spinner mSpinnerColor;
 
     public AddSubjectDialog() {
         // Required empty public constructor
     }
 
-    public static AddSubjectDialog newInstance() {
+    public static AddSubjectDialog newInstance(int baseSubjectId) {
         AddSubjectDialog fragment = new AddSubjectDialog();
-        //Bundle args = new Bundle();
-        //fragment.setArguments(args);
+        Bundle args = new Bundle();
+        args.putInt(ARG_BASE_SUBJECT_ID, baseSubjectId);
+        fragment.setArguments(args);
         return fragment;
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        //TODO
-        //if (getArguments() != null) {
-        //}
+        if (getArguments() != null) {
+            mBaseSubjectId = getArguments().getInt(ARG_BASE_SUBJECT_ID);
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View dialogLayout = inflater.inflate(R.layout.dialog_add_subject, null);
-        Spinner spinner = dialogLayout.findViewById(R.id.dialog_add_subject_spinner_color);
+        mEditName = dialogLayout.findViewById(R.id.dialog_add_subject_edit_name);
+        mSpinnerColor = dialogLayout.findViewById(R.id.dialog_add_subject_spinner_color);
         ColorSpinerAdapter subjectSpinerAdapter = new ColorSpinerAdapter(getActivity(),
                 R.layout.support_simple_spinner_dropdown_item,
                 getContext().getResources().getStringArray(R.array.color_palette));
         subjectSpinerAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-        spinner.setAdapter(subjectSpinerAdapter);
+        mSpinnerColor.setAdapter(subjectSpinerAdapter);
 
         builder.setView(dialogLayout)
                 .setPositiveButton(R.string.dialog_add_subject_btn_add,
@@ -80,22 +92,42 @@ public class AddSubjectDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        /*
         if (context instanceof OnCompleteAddSubject) {
             mListener = (OnCompleteAddSubject) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnCompleteAddSubject");
         }
+        */
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        //mListener = null;
     }
 
     private void publishSubject() {
-        mListener.onCompleteAddSubject(null);
+        String name;
+        String color;
+        if (mEditName != null) {
+            name = mEditName.getText().toString().trim();
+            if (name.isEmpty()) {
+                Toast.makeText(getActivity(),
+                        "cannot make empty name", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (mSpinnerColor != null) {
+                color = mSpinnerColor.getSelectedItem().toString();
+                if (color.isEmpty()) {
+                    Log.e("todo_tree", "publishSubject() color is empty");
+                    return;
+                }
+                RequestSubjectData requestData = new RequestSubjectData(name, color);
+                TodoProvider.getInstance().addSubject(requestData);
+            }
+        }
     }
 
     /**

@@ -5,6 +5,7 @@ import android.graphics.Color;
 import java.util.ArrayList;
 
 public class SubjectData {
+    public static final int NON_ID = -1;
     private int mId;
     private String mName;
     private String mColorString;
@@ -19,7 +20,7 @@ public class SubjectData {
         mListeners = new ArrayList<>();
     }
 
-    int getId() { return mId; }
+    public int getId() { return mId; }
 
     public String getName() {
         return mName;

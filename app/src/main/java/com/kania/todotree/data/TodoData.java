@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class TodoData implements ITodoData {
 
+    public static final int NON_ID = -1;
     public static final int NON_TARGETDATE = -1;
     public static final int MAX_DEPTH = 10;
 
@@ -117,5 +118,4 @@ public class TodoData implements ITodoData {
         }
         this.depth = evaluated;
     }
-
 }

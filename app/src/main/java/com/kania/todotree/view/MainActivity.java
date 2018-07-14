@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity
     public class FloatingButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            DialogFragment addTodoDialog = AddTodoDialog.newInstance(null);
+            DialogFragment addTodoDialog = AddTodoDialog.newInstance(TodoData.NON_ID);
             addTodoDialog.show(getSupportFragmentManager(), AddTodoDialog.class.getName());
         }
     }

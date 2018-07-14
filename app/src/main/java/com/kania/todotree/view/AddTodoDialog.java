@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.kania.todotree.R;
+import com.kania.todotree.data.RequestTodoData;
 import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
@@ -33,48 +35,51 @@ import java.util.List;
  * Use the {@link AddTodoDialog#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AddTodoDialog extends DialogFragment {
-    private TodoData mBaseTodo;
+public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataObserver{
+    private static final String ARG_BASE_TODO_ID = "baseTodoId";
+    private int mBaseTodoId;
     private Button mBtnTargetDate;
 
-    private OnCompleteAddTodo mListener;
+    private Spinner mSpinner;
+    private SubjectSpinerAdapter mSubjectSpinerAdapter;
+
+    //private OnCompleteAddTodo mListener;
 
     public AddTodoDialog() {
         // Required empty public constructor
     }
 
-    public static AddTodoDialog newInstance(TodoData baseTodo) {
+    public static AddTodoDialog newInstance(int baseTodoId) {
         AddTodoDialog fragment = new AddTodoDialog();
-        //Bundle args = new Bundle();
-        if (baseTodo != null) {
-            //TODO use baseTodo
-        }
-        //fragment.setArguments(args);
+        Bundle args = new Bundle();
+        args.putInt(ARG_BASE_TODO_ID, baseTodoId);
+        fragment.setArguments(args);
         return fragment;
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        //TODO
-        //if (getArguments() != null) {
-        //}
+        if (getArguments() != null) {
+            mBaseTodoId = getArguments().getInt(ARG_BASE_TODO_ID);
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View dialogLayout = inflater.inflate(R.layout.dialog_add_todo, null);
         ArrayList<SubjectData> subjectList = TodoProvider.getInstance().getAllSubject();
-        Spinner spinner = dialogLayout.findViewById(R.id.dialog_add_todo_spinner_subject);
-        SubjectSpinerAdapter subjectSpinerAdapter = new SubjectSpinerAdapter(getActivity(),
+        mSpinner = dialogLayout.findViewById(R.id.dialog_add_todo_spinner_subject);
+        mSubjectSpinerAdapter = new SubjectSpinerAdapter(getActivity(),
                 R.layout.support_simple_spinner_dropdown_item, subjectList);
-        subjectSpinerAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-        spinner.setAdapter(subjectSpinerAdapter);
+        mSubjectSpinerAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+        mSpinner.setAdapter(mSubjectSpinerAdapter);
 
         View btnAddSubject = dialogLayout.findViewById(R.id.dialog_add_todo_btn_subject);
         btnAddSubject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AddSubjectDialog addSubjectDialog = AddSubjectDialog.newInstance();
+                AddSubjectDialog addSubjectDialog =
+                        AddSubjectDialog.newInstance(SubjectData.NON_ID);
                 addSubjectDialog.show(getActivity().getSupportFragmentManager(),
                         AddSubjectDialog.class.getName());
             }
@@ -120,22 +125,64 @@ public class AddTodoDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        TodoProvider.getInstance().attachObserver(this);
+        /*
         if (context instanceof OnCompleteAddTodo) {
             mListener = (OnCompleteAddTodo) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnCompleteAddTodo");
         }
+        */
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        TodoProvider.getInstance().detachObserver(this);
+        //mListener = null;
+    }
+
+    @Override
+    public void onTodoAdded(TodoData added) {
+        //do nothing
+    }
+    @Override
+    public void onTodoRemoved(TodoData removed) {
+        //do nothing
+    }
+    @Override
+    public void onTodoUpdated(RequestTodoData prev, TodoData updated) {
+        //do nothing
+    }
+
+    @Override
+    public void onSubjectAdded(SubjectData added) {
+        Log.d("todo_tree", "onSubjectAdded() called, id : " + added.getId());
+        updateSubjectList();
+        if (mSpinner != null) {
+            int pos = mSubjectSpinerAdapter.getPositionBySubjectId(added.getId());
+            Log.d("todo_tree", "onSubjectAdded() pos : " + pos);
+            if (pos != SubjectData.NON_ID)
+                mSpinner.setSelection(pos);
+        }
+    }
+    @Override
+    public void onSubjectRemoved(SubjectData removed) {
+        updateSubjectList();
+    }
+    @Override
+    public void onSubjectUpdated(SubjectData prev, SubjectData updated) {
+        updateSubjectList();
+    }
+
+    private void updateSubjectList() {
+        if (mSubjectSpinerAdapter != null)
+            mSubjectSpinerAdapter.notifyDataSetChanged();
     }
 
     private void publishTodo() {
-        mListener.onCompleteAddTodo(null);
+        //mListener.onCompleteAddTodo(null);
     }
 
     /**
@@ -162,8 +209,6 @@ public class AddTodoDialog extends DialogFragment {
             mItems = items;
         }
 
-
-
         @Override
         public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             View view = super.getDropDownView(position, convertView, parent);
@@ -177,6 +222,14 @@ public class AddTodoDialog extends DialogFragment {
             View view = super.getView(position, convertView, parent);
             setSubjectOnView(view, position);
             return view;
+        }
+
+        public int getPositionBySubjectId(int subjectId) {
+            int ret = SubjectData.NON_ID;
+            for (SubjectData sd : mItems)
+                if (sd.getId() == subjectId)
+                    ret = sd.getId();
+            return ret;
         }
 
         private void setSubjectOnView(View view, int position) {
