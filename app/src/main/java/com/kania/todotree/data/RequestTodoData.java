@@ -21,7 +21,7 @@ public class RequestTodoData {
     public void setId(int id) {
         this.id = id;
     }
-    public void setTargetDate(long targetDate) {
+    public void setDueDate(long targetDate) {
         this.targetDate = targetDate;
     }
 

@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -28,6 +29,7 @@ import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -51,11 +53,12 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     private long mSetDueDate;
     private String mEditedName;
 
+    private Spinner mSpinner;
+    private EditText mEditName;
     private AppCompatCheckBox mCheckDueDate;
     private View mLayoutDueDate;
     private Button mBtnDueDate;
 
-    private Spinner mSpinner;
     private SubjectSpinerAdapter mSubjectSpinerAdapter;
 
     public AddTodoDialog() {
@@ -123,6 +126,18 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
                 R.layout.support_simple_spinner_dropdown_item, subjectList);
         mSubjectSpinerAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         mSpinner.setAdapter(mSubjectSpinerAdapter);
+        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view,
+                                       int position, long id) {
+                SubjectData subject = (SubjectData)adapterView.getSelectedItem();
+                mSelectedSubjectId = subject.getId();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                mSelectedSubjectId = SubjectData.NON_ID;
+            }
+        });
         selectSubject(mSelectedSubjectId);
 
         //add subject button
@@ -139,8 +154,8 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     }
 
     private void setTodoNameView(View dialogLayout) {
-        EditText editTodoName = dialogLayout.findViewById(R.id.dialog_add_todo_edit_name);
-        editTodoName.setText(mEditedName);
+        mEditName = dialogLayout.findViewById(R.id.dialog_add_todo_edit_name);
+        mEditName.setText(mEditedName);
     }
 
     private void setDueDateView(View dialogLayout) {
@@ -162,10 +177,16 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
                             @Override
                             public void onDateSet(int year, int monthOfYear, int dayOfMonth) {
                                 //TODO arrange
+                                Calendar dueDate = Calendar.getInstance();
+                                dueDate.set(year, monthOfYear, dayOfMonth);
+                                dueDate.set(Calendar.HOUR_OF_DAY, 0);
+                                dueDate.set(Calendar.MINUTE, 0);
+                                dueDate.set(Calendar.SECOND, 0);
+                                dueDate.set(Calendar.MILLISECOND, 0);
+                                mSetDueDate = dueDate.getTimeInMillis();
                                 if (mBtnDueDate != null) {
-                                    mBtnDueDate.setText(year + "/" + monthOfYear + "/" + dayOfMonth);
+                                    mBtnDueDate.setText(mSetDueDate + "");
                                 }
-                                mSetDueDate = year * 10000 + monthOfYear * 100 + dayOfMonth;
                             }
                         });
                 datePickerDialog.show(getActivity().getSupportFragmentManager(),
@@ -189,6 +210,13 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
             mBtnDueDate.setText(mSetDueDate + "");
         } else {
             mLayoutDueDate.setVisibility(View.GONE);
+            //TODO arrange
+            Calendar dueDate = Calendar.getInstance();
+            dueDate.set(Calendar.HOUR_OF_DAY, 0);
+            dueDate.set(Calendar.MINUTE, 0);
+            dueDate.set(Calendar.SECOND, 0);
+            dueDate.set(Calendar.MILLISECOND, 0);
+            mSetDueDate = dueDate.getTimeInMillis();
             //TODO set date to button as today
             mBtnDueDate.setText(mSetDueDate + "");
         }
@@ -257,6 +285,7 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
         Log.d("todo_tree", "onSubjectAdded() called, id : " + added.getId());
         updateSubjectList();
         selectSubject(added.getId());
+        mSelectedSubjectId = added.getId();
     }
     @Override
     public void onSubjectRemoved(SubjectData removed) {
@@ -282,7 +311,20 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     }
 
     private void publishTodo() {
-        //mListener.onCompleteAddTodo(null);
+        SubjectData subject = TodoProvider.getInstance().getSubject(mSelectedSubjectId);
+        String todoName = mEditName.getText().toString();
+        RequestTodoData requestTodoData = new RequestTodoData(subject, todoName, null,
+                getUpdatedDateMils());
+        if (mCheckDueDate.isChecked()) {
+            requestTodoData.setDueDate(mSetDueDate);
+        }
+        TodoProvider.getInstance().addTodo(requestTodoData);
+    }
+
+    //TODO arrange
+    private long getUpdatedDateMils() {
+        Calendar now = Calendar.getInstance();
+        return now.getTimeInMillis();
     }
 
     /**
@@ -323,6 +365,8 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
             setSubjectOnView(view, position);
             return view;
         }
+
+
 
         public int getPositionBySubjectId(int subjectId) {
             int ret = SubjectData.NON_ID;

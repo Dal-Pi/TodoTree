@@ -173,7 +173,7 @@ public class TodoProvider {
             RequestTodoData prev = new RequestTodoData(requested.subject,
                     requested.name, requested.parent, requested.updatedDate);
             prev.setId(requested.id);
-            prev.setTargetDate(requested.targetDate);
+            prev.setDueDate(requested.targetDate);
 
             TodoData target = mTodoMap.get(requested.id);
             target.setSubject(requested.subject);
