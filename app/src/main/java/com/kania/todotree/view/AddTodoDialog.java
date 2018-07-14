@@ -244,15 +244,15 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     }
 
     @Override
-    public void onTodoAdded(TodoData added) {
+    public void onTodoAdded(TodoData added, int position) {
         //do nothing
     }
     @Override
-    public void onTodoRemoved(TodoData removed) {
+    public void onTodoRemoved(TodoData removed, int position) {
         //do nothing
     }
     @Override
-    public void onTodoUpdated(RequestTodoData prev, TodoData updated) {
+    public void onTodoUpdated(RequestTodoData prev, TodoData updated, int position) {
         //do nothing
     }
 

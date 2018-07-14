@@ -48,17 +48,19 @@ public class TodoProvider {
         mSubjectMap.remove(subject.getId());
     }
 
-    private void insertTodo(TodoData todo) {
+    private int insertTodo(TodoData todo) {
+        int pos;
         if (todo.getParent() == null) {
             Log.d("todo_tree", todo.getId() + "is the root Todo");
-            mRootTodoList.add(0, todo);
-            mAllTodoList.add(0, todo);
+            pos = 0;
+            mRootTodoList.add(pos, todo);
+            mAllTodoList.add(pos, todo);
         } else {
             TodoData parent = mTodoMap.get(todo.getParent().getId());
             Log.d("todo_tree", "insertTodo() find parent:" + parent.getId());
             int childrenCount = parent.getChildrenCount();
             Log.d("todo_tree", parent.getId() + "'s children count = " + childrenCount);
-            int pos = mAllTodoList.indexOf(parent) + childrenCount + 1;
+            pos = mAllTodoList.indexOf(parent) + childrenCount + 1;
             if (mAllTodoList.size() >= pos) {
                 mAllTodoList.add(pos, todo);
             } else {
@@ -66,14 +68,17 @@ public class TodoProvider {
             }
         }
         mTodoMap.put(todo.getId(), todo);
+        return pos;
     }
 
-    private void removeTodo(TodoData todo) {
+    private int removeTodo(TodoData todo) {
         if (todo.getParent() == null) {
             mRootTodoList.remove(todo);
         }
+        int pos = mAllTodoList.indexOf(todo);
         mAllTodoList.remove(todo);
         mTodoMap.remove(todo.getId());
+        return pos;
     }
 
     public ArrayList<TodoData> getAllTodo() {
@@ -127,13 +132,13 @@ public class TodoProvider {
         }
         TodoData todo = requested.createTodo(maxId + 1);
 
-        insertTodo(todo);
+        int pos = insertTodo(todo);
         if (todo.getParent() != null) {
             todo.getParent().insertChild(todo);
         }
 
         for (IDataObserver observer : mObservers) {
-            observer.onTodoAdded(todo);
+            observer.onTodoAdded(todo, pos);
         }
     }
     public void deleteTodo(TodoData requested) {
@@ -141,10 +146,10 @@ public class TodoProvider {
         if (requested.getParent() != null) {
             requested.getParent().removeChild(requested);
         }
-        removeTodo(requested);
+        int pos = removeTodo(requested);
 
         for (IDataObserver observer : mObservers) {
-            observer.onTodoRemoved(requested);
+            observer.onTodoRemoved(requested, pos);
         }
     }
     public void updateTodo(RequestTodoData requested) {
@@ -162,8 +167,9 @@ public class TodoProvider {
             target.setDueDate(requested.targetDate);
             target.setLastUpdated(requested.updatedDate);
 
+            int pos = mAllTodoList.indexOf(target);
             for (IDataObserver observer : mObservers) {
-                observer.onTodoUpdated(prev, target);
+                observer.onTodoUpdated(prev, target, pos);
             }
         }
     }
@@ -199,9 +205,9 @@ public class TodoProvider {
     }
 
     public interface IDataObserver {
-        void onTodoAdded(TodoData added);
-        void onTodoRemoved(TodoData removed);
-        void onTodoUpdated(RequestTodoData prev, TodoData updated);
+        void onTodoAdded(TodoData added, int position);
+        void onTodoRemoved(TodoData removed, int position);
+        void onTodoUpdated(RequestTodoData prev, TodoData updated, int position);
 
         void onSubjectAdded(SubjectData added);
         void onSubjectRemoved(SubjectData removed);

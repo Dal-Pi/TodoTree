@@ -6,21 +6,18 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.kania.todotree.R;
+import com.kania.todotree.data.RequestTodoData;
+import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
- * interface.
- */
-public class CheckListFragment extends Fragment {
+public class CheckListFragment extends Fragment implements TodoProvider.IDataObserver{
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
 
@@ -70,6 +67,7 @@ public class CheckListFragment extends Fragment {
                     TodoProvider.getInstance().getAllTodo());
             mAdapter.setHasStableIds(true);
             recyclerView.setAdapter(mAdapter);
+
         }
         return view;
     }
@@ -78,10 +76,38 @@ public class CheckListFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        TodoProvider.getInstance().attachObserver(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+        TodoProvider.getInstance().detachObserver(this);
+    }
+
+    @Override
+    public void onTodoAdded(TodoData added, int position) {
+        Log.d("todo_tree", "onTodoAdded() id:" + added.getId() + ", pos:" + position);
+        mAdapter.notifyItemChanged(position);
+    }
+    @Override
+    public void onTodoRemoved(TodoData removed, int position) {
+        mAdapter.notifyItemChanged(position);
+    }
+    @Override
+    public void onTodoUpdated(RequestTodoData prev, TodoData updated, int position) {
+        mAdapter.notifyItemChanged(position);
+    }
+    @Override
+    public void onSubjectAdded(SubjectData added) {
+        //TODO
+    }
+    @Override
+    public void onSubjectRemoved(SubjectData removed) {
+        //TODO
+    }
+    @Override
+    public void onSubjectUpdated(SubjectData prev, SubjectData updated) {
+        //TODO
     }
 }
