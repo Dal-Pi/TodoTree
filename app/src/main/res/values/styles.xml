@@ -31,11 +31,14 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
-    <style name="TodoTreeDialogEditStyle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
+    <style name="TodoTreeEditStyle">
         <item name="android:lines">1</item>
         <item name="android:inputType">text</item>
+        <item name="android:imeOptions">flagNoExtractUi</item>
+    </style>
+    <style name="TodoTreeDialogEditStyle" parent="TodoTreeEditStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
     </style>
 
 </resources>

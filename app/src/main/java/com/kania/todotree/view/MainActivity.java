@@ -14,8 +14,7 @@ import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoData;
 
 public class MainActivity extends AppCompatActivity
-        implements CheckListFragment.OnListFragmentInteractionListener,
-        AddSubjectDialog.OnCompleteAddSubject,
+        implements AddSubjectDialog.OnCompleteAddSubject,
         AddTodoDialog.OnCompleteAddTodo {
 
     @Override
@@ -49,11 +48,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onListFragmentInteraction(TodoData item) {
-        //Toast.makeText(this, item.getName(), Toast.LENGTH_SHORT).show();
     }
 
     @Override

@@ -1,33 +1,40 @@
 package com.kania.todotree.view;
 
+import android.content.Context;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.kania.todotree.R;
+import com.kania.todotree.data.RequestTodoData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
-import com.kania.todotree.view.CheckListFragment.OnListFragmentInteractionListener;
 
 import java.util.List;
 
-public class MyItemRecyclerViewAdapter
-        extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.TodoViewHolder> {
+import static android.content.Context.INPUT_METHOD_SERVICE;
+
+public class TodoItemRecyclerViewAdapter
+        extends RecyclerView.Adapter<TodoItemRecyclerViewAdapter.TodoViewHolder> {
 
     public static final int NO_ITEM_SELECTED = -100;
+
+    private Context mContext;
+
     private final List<TodoData> mItems;
-    private final OnListFragmentInteractionListener mListener;
 
     private int mSelectedPos;
 
-    public MyItemRecyclerViewAdapter(List<TodoData> items, OnListFragmentInteractionListener listener) {
+    public TodoItemRecyclerViewAdapter(Context context, List<TodoData> items) {
+        mContext = context;
         mItems = items;
-        mListener = listener;
         mSelectedPos = NO_ITEM_SELECTED;
     }
 
@@ -45,7 +52,7 @@ public class MyItemRecyclerViewAdapter
 
     @Override
     public void onBindViewHolder(final TodoViewHolder holder, final int position) {
-        TodoData todo = mItems.get(position);
+        final TodoData todo = mItems.get(position);
         holder.mItem = todo;
 
         decorateTodoItem(holder, todo);
@@ -53,14 +60,21 @@ public class MyItemRecyclerViewAdapter
         holder.mContentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (null != mListener) {
-                    //TODO debug
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentInteraction(holder.mItem);
+                select(holder);
+            }
+        });
 
-                    select(holder);
-                }
+        holder.mAddSubTodo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = holder.mEditSubTodoName.getText().toString();
+                if (name.trim().isEmpty())
+                    return;
+                RequestTodoData requestTodoData = new RequestTodoData(todo.getSubject(), name, todo,
+                        TodoDateUtil.getCurrent());
+                TodoProvider.getInstance().addTodo(requestTodoData);
+                holder.mEditSubTodoName.setText("");
+                select(holder);
             }
         });
     }
@@ -68,8 +82,9 @@ public class MyItemRecyclerViewAdapter
     private void decorateTodoItem(final TodoViewHolder holder, TodoData todo) {
         int color = todo.getSubject().getColor();
         holder.mDivider.setVisibility(todo.getDepth() == 0 ? View.VISIBLE : View.GONE);
-        holder.mDueDate.setText(todo.getTargetDate() + ""); //TODO
-        holder.mUpdated.setText(todo.getLastUpdated() + ""); //TODO
+        holder.mDueDate.setText(TodoDateUtil.getFormatedDateString(mContext, todo.getDueDate()));
+        holder.mUpdated.setText(TodoDateUtil
+                .getFormatedDateAndTimeString(mContext, todo.getLastUpdated()));
         holder.mCheckBox.setChecked(todo.isCompleted());
         ViewUtil.setCheckBoxColor(holder.mCheckBox, color, color);
         holder.mName.setText(todo.getName());
@@ -89,13 +104,14 @@ public class MyItemRecyclerViewAdapter
             holder.mFinishTodo.setVisibility(View.INVISIBLE);
         }
 
-        holder.mDateLayout.setVisibility(View.GONE);
+        holder.mDateLayout.setVisibility(View.VISIBLE);
     }
 
     private void select(final TodoViewHolder holder) {
         int position = holder.getAdapterPosition();
-        Log.d("todo_tree", "[MyItemRecyclerViewAdapter] selected pos : " + holder.getAdapterPosition()
+        Log.d("todo_tree", "[TodoItemRecyclerViewAdapter] selected pos : " + holder.getAdapterPosition()
                 + ", id = " + holder.mItem.getId());
+        Log.d("todo_tree", "selected! " + holder.mItem.toString());
 
         TodoProvider.getInstance().select(holder.mItem.getId());
 
@@ -113,6 +129,15 @@ public class MyItemRecyclerViewAdapter
                 mSelectedPos = NO_ITEM_SELECTED;
                 notifyItemChanged(prev);
             }
+            hideInputMethod(holder.mEditSubTodoName);
+        }
+    }
+
+    private void hideInputMethod(EditText edit) {
+        InputMethodManager inputManager =
+                (InputMethodManager) mContext.getSystemService(INPUT_METHOD_SERVICE);
+        if (inputManager != null) {
+            inputManager.hideSoftInputFromWindow(edit.getWindowToken(),0);
         }
     }
 
@@ -136,6 +161,7 @@ public class MyItemRecyclerViewAdapter
 
         public final View mMenuLayout;
         public final TextView mIdDebug;
+        public final EditText mEditSubTodoName;
         public final Button mAddSubTodo;
         public final Button mFinishTodo;
 
@@ -157,6 +183,7 @@ public class MyItemRecyclerViewAdapter
 
             mMenuLayout = view.findViewById(R.id.item_layout_select_menu);
             mIdDebug =  view.findViewById(R.id.item_text_selected_id_debug);
+            mEditSubTodoName = view.findViewById(R.id.item_edit_sub_todo_name);
             mAddSubTodo = view.findViewById(R.id.item_btn_add_sub_todo);
             mFinishTodo = view.findViewById(R.id.item_btn_finish_todo);
         }

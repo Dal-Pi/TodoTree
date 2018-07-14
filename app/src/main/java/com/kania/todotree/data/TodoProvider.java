@@ -10,7 +10,8 @@ public class TodoProvider {
     public static int NO_SELECTED = -1;
     private static TodoProvider mInstance;
 
-    private ArrayList<TodoData> mTodoList;
+    private ArrayList<TodoData> mRootTodoList;
+    private ArrayList<TodoData> mAllTodoList;
     private HashMap<Integer, TodoData> mTodoMap;
     private ArrayList<SubjectData> mSubjectList;
     private HashMap<Integer, SubjectData> mSubjectMap;
@@ -26,63 +27,16 @@ public class TodoProvider {
     private TodoProvider() {
         mObservers = new ArrayList<>();
 
-        mTodoList = new ArrayList<>();
-        mTodoMap = new HashMap<>();
         mSubjectList = new ArrayList<>();
         mSubjectMap = new HashMap<>();
 
+        mRootTodoList = new ArrayList<>();
+        mAllTodoList = new ArrayList<>();
+        mTodoMap = new HashMap<>();
+
+        //TODO add DB when create
         SubjectData defaultSubject = new SubjectData(0, "defualt", "#FF555555");
         insertSubject(defaultSubject);
-
-        //dummy data [start]
-        /*
-        SubjectData sub1 = new SubjectData(1, "subject_1", "#FF9696E1");
-        insertSubject(sub1);
-        SubjectData sub2 = new SubjectData(2, "subject_2", "#FFB4D25A");
-        insertSubject(sub2);
-        SubjectData sub3 = new SubjectData(3, "subject_3", "#FFFF7F7F");
-        insertSubject(sub3);
-
-        TodoData todo1_1 = new TodoData(1, sub1, "todo1_1", null,
-        false, 0, 0, 0);
-        insertTodo(todo1_1);
-        TodoData todo2_1 = new TodoData(2, sub1, "todo2_1", todo1_1,
-                false, 0, 0, 0);
-        insertTodo(todo2_1);
-        TodoData todo3_1 = new TodoData(3, sub1, "todo3_1", todo2_1,
-                true, 0, 0, 0);
-        insertTodo(todo3_1);
-        TodoData todo4_1 = new TodoData(4, sub1, "todo4_1", todo3_1,
-                true, 0, 0, 0);
-        insertTodo(todo4_1);
-
-        TodoData todo5_1 = new TodoData(5, sub2, "todo5_1", null,
-                true, 0, 0, 0);
-        insertTodo(todo5_1);
-        TodoData todo5_2 = new TodoData(6, sub2, "todo5_2", null,
-                false, 0, 0, 0);
-        insertTodo(todo5_2);
-        TodoData todo6_1 = new TodoData(7, sub2, "todo6_1", todo5_2,
-                false, 0, 0, 0);
-        insertTodo(todo6_1);
-
-        TodoData todo7_1 = new TodoData(8, sub3, "todo7_1", null,
-                true, 0, 0, 0);
-        insertTodo(todo7_1);
-        TodoData todo8_1 = new TodoData(9, sub3, "todo8_1", null,
-                true, 0, 0, 0);
-        insertTodo(todo8_1);
-        TodoData todo9_1 = new TodoData(10, sub3, "todo9_1", null,
-                true, 0, 0, 0);
-        insertTodo(todo9_1);
-        TodoData todo10_1 = new TodoData(11, sub3, "todo10_1", null,
-                true, 0, 0, 0);
-        insertTodo(todo10_1);
-        TodoData todo11_1 = new TodoData(12, sub3, "todo11_1", null,
-                true, 0, 0, 0);
-        insertTodo(todo11_1);
-        */
-        //dummy data [end]
     }
 
     private void insertSubject(SubjectData subject) {
@@ -95,16 +49,35 @@ public class TodoProvider {
     }
 
     private void insertTodo(TodoData todo) {
-        mTodoList.add(todo);
+        if (todo.getParent() == null) {
+            Log.d("todo_tree", todo.getId() + "is the root Todo");
+            mRootTodoList.add(0, todo);
+            mAllTodoList.add(0, todo);
+        } else {
+            TodoData parent = mTodoMap.get(todo.getParent().getId());
+            Log.d("todo_tree", "insertTodo() find parent:" + parent.getId());
+            int childrenCount = parent.getChildrenCount();
+            Log.d("todo_tree", parent.getId() + "'s children count = " + childrenCount);
+            int pos = mAllTodoList.indexOf(parent) + childrenCount + 1;
+            if (mAllTodoList.size() >= pos) {
+                mAllTodoList.add(pos, todo);
+            } else {
+                Log.e("todo_tree", "insertTodo() position over");
+            }
+        }
         mTodoMap.put(todo.getId(), todo);
     }
+
     private void removeTodo(TodoData todo) {
-        mTodoList.remove(todo);
+        if (todo.getParent() == null) {
+            mRootTodoList.remove(todo);
+        }
+        mAllTodoList.remove(todo);
         mTodoMap.remove(todo.getId());
     }
 
     public ArrayList<TodoData> getAllTodo() {
-        return mTodoList;
+        return mAllTodoList;
     }
 
     public ArrayList<SubjectData> getAllSubject() {
@@ -148,12 +121,16 @@ public class TodoProvider {
     public void addTodo(RequestTodoData requested) {
         //TODO use DB
         int maxId  = 0;
-        for (TodoData td : mTodoList) {
+        for (TodoData td : mAllTodoList) {
             if (td.getId() > maxId)
                 maxId = td.getId();
         }
         TodoData todo = requested.createTodo(maxId + 1);
+
         insertTodo(todo);
+        if (todo.getParent() != null) {
+            todo.getParent().insertChild(todo);
+        }
 
         for (IDataObserver observer : mObservers) {
             observer.onTodoAdded(todo);
@@ -161,6 +138,9 @@ public class TodoProvider {
     }
     public void deleteTodo(TodoData requested) {
         //TODO use DB
+        if (requested.getParent() != null) {
+            requested.getParent().removeChild(requested);
+        }
         removeTodo(requested);
 
         for (IDataObserver observer : mObservers) {
@@ -178,8 +158,8 @@ public class TodoProvider {
             TodoData target = mTodoMap.get(requested.id);
             target.setSubject(requested.subject);
             target.setName(requested.name);
-            target.setParent(requested.parent);
-            target.setTargetDate(requested.targetDate);
+            //target.setParent(requested.parent); //TODO it can be changed?
+            target.setDueDate(requested.targetDate);
             target.setLastUpdated(requested.updatedDate);
 
             for (IDataObserver observer : mObservers) {

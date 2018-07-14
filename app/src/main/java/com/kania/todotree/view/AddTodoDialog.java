@@ -21,6 +21,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kania.todotree.R;
 import com.kania.todotree.data.RequestTodoData;
@@ -30,6 +31,7 @@ import com.kania.todotree.data.TodoProvider;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,7 +42,9 @@ import java.util.List;
  * Use the {@link AddTodoDialog#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataObserver{
+public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataObserver,
+        View.OnClickListener,
+        TodoDatePickerDialog.OnDateSetListener {
     private static final String ARG_BASE_TODO_ID = "baseTodoId";
     private static final String ARG_SELECTED_SUBJECT_ID = "SelectedSubjectId";
     private static final String ARG_SET_DUE_DATE = "setDueDate";
@@ -92,7 +96,7 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
                 TodoData baseTodo = TodoProvider.getInstance().getTodo(mBaseTodoId);
                 mSelectedSubjectId = baseTodo.getSubject().getId();
                 mEditedName = baseTodo.getName();
-                mSetDueDate = baseTodo.getTargetDate();
+                mSetDueDate = baseTodo.getDueDate();
             } else {
                 mSelectedSubjectId = SubjectData.NON_ID;
                 mEditedName = "";
@@ -169,31 +173,7 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
         mCheckDueDate.setChecked(isSetDueDate);
 
         //duedate button
-        mBtnDueDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TodoDatePickerDialog datePickerDialog = TodoDatePickerDialog.newInstance(
-                        new TodoDatePickerDialog.onDateSet() {
-                            @Override
-                            public void onDateSet(int year, int monthOfYear, int dayOfMonth) {
-                                //TODO arrange
-                                Calendar dueDate = Calendar.getInstance();
-                                dueDate.set(year, monthOfYear, dayOfMonth);
-                                dueDate.set(Calendar.HOUR_OF_DAY, 0);
-                                dueDate.set(Calendar.MINUTE, 0);
-                                dueDate.set(Calendar.SECOND, 0);
-                                dueDate.set(Calendar.MILLISECOND, 0);
-                                mSetDueDate = dueDate.getTimeInMillis();
-                                if (mBtnDueDate != null) {
-                                    mBtnDueDate.setText(mSetDueDate + "");
-                                }
-                            }
-                        });
-                datePickerDialog.show(getActivity().getSupportFragmentManager(),
-                        TodoDatePickerDialog.class.getName());
-            }
-        });
-
+        mBtnDueDate.setOnClickListener(this);
         //checkbox
         mCheckDueDate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -206,20 +186,14 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     private void setDueDateLayout(boolean isSetDueDate) {
         if (isSetDueDate) {
             mLayoutDueDate.setVisibility(View.VISIBLE);
-            //TODO set date to button as saved value
-            mBtnDueDate.setText(mSetDueDate + "");
+            mBtnDueDate.setText(TodoDateUtil.getFormatedDateString(getContext(), mSetDueDate));
         } else {
             mLayoutDueDate.setVisibility(View.GONE);
-            //TODO arrange
-            Calendar dueDate = Calendar.getInstance();
-            dueDate.set(Calendar.HOUR_OF_DAY, 0);
-            dueDate.set(Calendar.MINUTE, 0);
-            dueDate.set(Calendar.SECOND, 0);
-            dueDate.set(Calendar.MILLISECOND, 0);
-            mSetDueDate = dueDate.getTimeInMillis();
-            //TODO set date to button as today
-            mBtnDueDate.setText(mSetDueDate + "");
+            Calendar today = Calendar.getInstance();
+            Date todayWithoutTime = TodoDateUtil.removeTimeFromDate(today.getTime());
+            mSetDueDate = todayWithoutTime.getTime();
         }
+        mBtnDueDate.setText(TodoDateUtil.getFormatedDateString(getContext(), mSetDueDate));
     }
 
     private void setDialogButtonClickEvent(AlertDialog.Builder builder, View dialogLayout) {
@@ -243,22 +217,24 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
         TodoProvider.getInstance().attachObserver(this);
-        /*
-        if (context instanceof OnCompleteAddTodo) {
-            mListener = (OnCompleteAddTodo) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnCompleteAddTodo");
-        }
-        */
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        TodoDatePickerDialog dialog = (TodoDatePickerDialog) getActivity()
+                .getSupportFragmentManager()
+                .findFragmentByTag(TodoDatePickerDialog.class.getName());
+        if (dialog != null)
+            dialog.setListener(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         TodoProvider.getInstance().detachObserver(this);
-        //mListener = null;
     }
 
     @Override
@@ -296,6 +272,27 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
         updateSubjectList();
     }
 
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == mBtnDueDate.getId()) {
+            Calendar setDate = Calendar.getInstance();
+            setDate.setTimeInMillis(mSetDueDate);
+            TodoDatePickerDialog datePickerDialog = TodoDatePickerDialog.newInstance(
+                    setDate.getTime(), this);
+            datePickerDialog.show(getActivity().getSupportFragmentManager(),
+                    TodoDatePickerDialog.class.getName());
+        }
+    }
+
+    @Override
+    public void onDateSet(Date setDate) {
+        mSetDueDate = TodoDateUtil.getTimeInMillis(setDate);
+        if (mBtnDueDate != null) {
+            mBtnDueDate.setText(TodoDateUtil.getFormatedDateString(
+                    getContext(), setDate));
+        }
+    }
+
     private void updateSubjectList() {
         if (mSubjectSpinerAdapter != null)
             mSubjectSpinerAdapter.notifyDataSetChanged();
@@ -313,18 +310,17 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     private void publishTodo() {
         SubjectData subject = TodoProvider.getInstance().getSubject(mSelectedSubjectId);
         String todoName = mEditName.getText().toString();
+        if (todoName.trim().isEmpty()) {
+            Toast.makeText(getActivity(),
+                    "cannot make empty name", Toast.LENGTH_SHORT).show();
+            return;
+        }
         RequestTodoData requestTodoData = new RequestTodoData(subject, todoName, null,
-                getUpdatedDateMils());
+                TodoDateUtil.getCurrent());
         if (mCheckDueDate.isChecked()) {
             requestTodoData.setDueDate(mSetDueDate);
         }
         TodoProvider.getInstance().addTodo(requestTodoData);
-    }
-
-    //TODO arrange
-    private long getUpdatedDateMils() {
-        Calendar now = Calendar.getInstance();
-        return now.getTimeInMillis();
     }
 
     /**

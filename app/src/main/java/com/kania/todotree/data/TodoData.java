@@ -1,5 +1,7 @@
 package com.kania.todotree.data;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 public class TodoData implements ITodoData {
@@ -13,7 +15,7 @@ public class TodoData implements ITodoData {
     private String name;
     private TodoData parent;
     private boolean isCompleted;
-    private long targetDate;
+    private long dueDate;
     private long created;
     private long lastUpdated;
 
@@ -22,13 +24,13 @@ public class TodoData implements ITodoData {
     private ArrayList<TodoData> children;
 
     public TodoData(int id, SubjectData subject, String name, TodoData parent,
-                    boolean isCompleted, long targetDate, long created, long lastUpdated) {
+                    boolean isCompleted, long dueDate, long created, long lastUpdated) {
         this.id = id;
         this.subject = subject;
         this.name = name;
         this.parent = parent;
         this.isCompleted = isCompleted;
-        this.targetDate = targetDate;
+        this.dueDate = dueDate;
         this.created = created;
         this.lastUpdated = lastUpdated;
 
@@ -77,11 +79,11 @@ public class TodoData implements ITodoData {
         isCompleted = completed;
     }
 
-    public long getTargetDate() {
-        return targetDate;
+    public long getDueDate() {
+        return dueDate;
     }
-    public void setTargetDate(long targetDate) {
-        this.targetDate = targetDate;
+    public void setDueDate(long dueDate) {
+        this.dueDate = dueDate;
     }
 
     public long getCreated() {
@@ -109,6 +111,18 @@ public class TodoData implements ITodoData {
         return depth;
     }
 
+    public ArrayList<TodoData> getChildren() {
+        return children;
+    }
+    public void insertChild(TodoData child) {
+        Log.d("todo_tree", "insertChild() added child : " + child.getId());
+        children.add(child);
+    }
+    public void removeChild(TodoData child) {
+        Log.d("todo_tree", "removeChild() removed child : " + child.getId());
+        children.remove(child);
+    }
+
     private void evaluateDepth() {
         int evaluated = 0;
         TodoData upperTodo = parent;
@@ -117,5 +131,31 @@ public class TodoData implements ITodoData {
             upperTodo = upperTodo.parent;
         }
         this.depth = evaluated;
+    }
+
+
+    public int getChildrenCount() {
+        return getChildrenCountRecur(this);
+    }
+    private int getChildrenCountRecur(TodoData parentTodo) {
+        int evaluated = parentTodo.getChildren().size();
+        Log.d("todo_tree", "getChildrenCountRecur() id:" + parentTodo.getId() + ", childrenSize:" + parentTodo.getChildren().size());
+        for (TodoData td : parentTodo.getChildren()) {
+            evaluated += getChildrenCountRecur(td);
+        }
+        return evaluated;
+    }
+
+    @Override
+    public String toString() {
+        return "depth:" + depth
+                + ", id:" + id
+                + ", subject:" + subject.getId()
+                + ", name:" + name
+                + ", parent:" + ((parent != null) ? parent.getId() : NON_ID)
+                + ", check:" + isCompleted
+                + ", due:" + dueDate
+                + ", create:" + created
+                + ", update:" + lastUpdated;
     }
 }
