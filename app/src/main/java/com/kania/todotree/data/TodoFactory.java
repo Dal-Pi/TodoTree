@@ -14,7 +14,7 @@ public class TodoFactory {
         this.name = name;
         this.parent = parent;
         this.insertDate = insertDate;
-        targetDate = TodoData.NON_TARGETDATE;
+        targetDate = TodoData.NON_DUEDATE;
     }
 
     TodoData getTodo(int id) {

@@ -15,7 +15,7 @@ public class RequestTodoData {
         this.name = name;
         this.parent = parent;
         this.updatedDate = updatedDate;
-        targetDate = TodoData.NON_TARGETDATE;
+        targetDate = TodoData.NON_DUEDATE;
     }
 
     public void setId(int id) {

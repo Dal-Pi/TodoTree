@@ -45,6 +45,7 @@ public class AddSubjectDialog extends DialogFragment {
         // Required empty public constructor
     }
 
+    //TODO I did not define save args but work. define clearly
     public static AddSubjectDialog newInstance(int baseSubjectId) {
         AddSubjectDialog fragment = new AddSubjectDialog();
         Bundle args = new Bundle();

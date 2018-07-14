@@ -36,15 +36,29 @@
             style="@style/TodoTreeDialogEditStyle"
             android:id="@+id/dialog_add_todo_edit_name"
             android:hint="@string/dialog_add_todo_title_name" />
-        <TextView
-            style="@style/TodoTreeDialogTitleStyle"
-            android:text="@string/dialog_add_todo_title_target_date" />
-        <Button
-            style="@style/TodoTreeButtonBarStyle"
-            android:id="@+id/dialog_add_todo_btn_target_date"
-            android:layout_width="wrap_content"
+        <android.support.v7.widget.AppCompatCheckBox
+            android:id="@+id/dialog_add_todo_check_due_date"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="left"
-            android:text="@string/dialog_add_title_target_date_dummy"/>
+            android:text="@string/dialog_add_todo_check_due_date"
+            android:checked="false"/>
+        <LinearLayout
+            android:id="@+id/dialog_add_todo_layout_due_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical" >
+            <TextView
+                style="@style/TodoTreeDialogTitleStyle"
+                android:text="@string/dialog_add_todo_title_due_date" />
+            <Button
+                style="@style/TodoTreeButtonBarStyle"
+                android:id="@+id/dialog_add_todo_btn_due_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:text="@string/dialog_add_title_target_date_dummy"/>
+        </LinearLayout>
+
     </LinearLayout>
 </LinearLayout>

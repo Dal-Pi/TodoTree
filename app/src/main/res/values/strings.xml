@@ -15,7 +15,8 @@
     <string name="dialog_add_todo_prompt_subject">Select Subject</string>
     <string name="dialog_add_todo_title_name">Todo Name</string>
     <string name="dialog_add_todo_hint_name">Input todo title</string>
-    <string name="dialog_add_todo_title_target_date">Due Date</string>
+    <string name="dialog_add_todo_check_due_date">Set Due Date</string>
+    <string name="dialog_add_todo_title_due_date">Due Date</string>
     <string name="dialog_add_todo_btn_add">@string/base_add</string>
     <string name="dialog_add_todo_btn_cancel">@string/base_cancel</string>
 

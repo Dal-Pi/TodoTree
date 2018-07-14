@@ -111,6 +111,14 @@ public class TodoProvider {
         return mSubjectList;
     }
 
+    public TodoData getTodo(int id) {
+        return mTodoMap.get(id);
+    }
+
+    public SubjectData getSubject(int id) {
+        return mSubjectMap.get(id);
+    }
+
     public int getSelected() {
         return mSelected;
     }

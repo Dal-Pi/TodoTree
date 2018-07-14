@@ -9,12 +9,15 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -37,13 +40,23 @@ import java.util.List;
  */
 public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataObserver{
     private static final String ARG_BASE_TODO_ID = "baseTodoId";
+    private static final String ARG_SELECTED_SUBJECT_ID = "SelectedSubjectId";
+    private static final String ARG_SET_DUE_DATE = "setDueDate";
+    private static final String ARG_EDITED_NAME = "editedNAme";
+
+
+    //need to save args
     private int mBaseTodoId;
-    private Button mBtnTargetDate;
+    private int mSelectedSubjectId;
+    private long mSetDueDate;
+    private String mEditedName;
+
+    private AppCompatCheckBox mCheckDueDate;
+    private View mLayoutDueDate;
+    private Button mBtnDueDate;
 
     private Spinner mSpinner;
     private SubjectSpinerAdapter mSubjectSpinerAdapter;
-
-    //private OnCompleteAddTodo mListener;
 
     public AddTodoDialog() {
         // Required empty public constructor
@@ -57,23 +70,62 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
         return fragment;
     }
 
+    public void saveArgs(Bundle args) {
+        args.putInt(ARG_BASE_TODO_ID, TodoData.NON_ID);
+        args.putInt(ARG_SELECTED_SUBJECT_ID, mSelectedSubjectId);
+        args.putString(ARG_EDITED_NAME, mEditedName);
+        args.putLong(ARG_SET_DUE_DATE, mSetDueDate);
+    }
+
+    public void restoreSavedData(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            mBaseTodoId = TodoData.NON_ID;
+            mSelectedSubjectId = savedInstanceState.getInt(ARG_SELECTED_SUBJECT_ID);
+            mEditedName = savedInstanceState.getString(ARG_EDITED_NAME);
+            mSetDueDate = savedInstanceState.getLong(ARG_SET_DUE_DATE);
+        } else {
+            mBaseTodoId = getArguments().getInt(ARG_BASE_TODO_ID);
+            if (mBaseTodoId != TodoData.NON_ID) {
+                TodoData baseTodo = TodoProvider.getInstance().getTodo(mBaseTodoId);
+                mSelectedSubjectId = baseTodo.getSubject().getId();
+                mEditedName = baseTodo.getName();
+                mSetDueDate = baseTodo.getTargetDate();
+            } else {
+                mSelectedSubjectId = SubjectData.NON_ID;
+                mEditedName = "";
+                mSetDueDate = TodoData.NON_DUEDATE;
+            }
+        }
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        if (getArguments() != null) {
-            mBaseTodoId = getArguments().getInt(ARG_BASE_TODO_ID);
-        }
+        restoreSavedData(savedInstanceState);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View dialogLayout = inflater.inflate(R.layout.dialog_add_todo, null);
+
+        setSubjectView(dialogLayout);
+        setTodoNameView(dialogLayout);
+        setDueDateView(dialogLayout);
+        setDialogButtonClickEvent(builder, dialogLayout);
+
+        return builder.create();
+    }
+
+    private void setSubjectView(View dialogLayout) {
+        //spinner
         ArrayList<SubjectData> subjectList = TodoProvider.getInstance().getAllSubject();
         mSpinner = dialogLayout.findViewById(R.id.dialog_add_todo_spinner_subject);
         mSubjectSpinerAdapter = new SubjectSpinerAdapter(getActivity(),
                 R.layout.support_simple_spinner_dropdown_item, subjectList);
         mSubjectSpinerAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         mSpinner.setAdapter(mSubjectSpinerAdapter);
+        selectSubject(mSelectedSubjectId);
 
+        //add subject button
         View btnAddSubject = dialogLayout.findViewById(R.id.dialog_add_todo_btn_subject);
         btnAddSubject.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,42 +136,80 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
                         AddSubjectDialog.class.getName());
             }
         });
+    }
 
-        mBtnTargetDate = dialogLayout.findViewById(R.id.dialog_add_todo_btn_target_date);
-        mBtnTargetDate.setOnClickListener(new View.OnClickListener() {
+    private void setTodoNameView(View dialogLayout) {
+        EditText editTodoName = dialogLayout.findViewById(R.id.dialog_add_todo_edit_name);
+        editTodoName.setText(mEditedName);
+    }
+
+    private void setDueDateView(View dialogLayout) {
+        //layout
+        mCheckDueDate = dialogLayout.findViewById(R.id.dialog_add_todo_check_due_date);
+        mLayoutDueDate = dialogLayout.findViewById(R.id.dialog_add_todo_layout_due_date);
+        mBtnDueDate = dialogLayout.findViewById(R.id.dialog_add_todo_btn_due_date);
+
+        boolean isSetDueDate = (mSetDueDate != TodoData.NON_DUEDATE);
+        setDueDateLayout(isSetDueDate);
+        mCheckDueDate.setChecked(isSetDueDate);
+
+        //duedate button
+        mBtnDueDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 TodoDatePickerDialog datePickerDialog = TodoDatePickerDialog.newInstance(
                         new TodoDatePickerDialog.onDateSet() {
-                    @Override
-                    public void onDateSet(int year, int monthOfYear, int dayOfMonth) {
-                        //TODO arrange
-                        if (mBtnTargetDate != null) {
-                            mBtnTargetDate.setText(year + "/" + monthOfYear + "/" + dayOfMonth);
-                        }
-                    }
-                });
+                            @Override
+                            public void onDateSet(int year, int monthOfYear, int dayOfMonth) {
+                                //TODO arrange
+                                if (mBtnDueDate != null) {
+                                    mBtnDueDate.setText(year + "/" + monthOfYear + "/" + dayOfMonth);
+                                }
+                                mSetDueDate = year * 10000 + monthOfYear * 100 + dayOfMonth;
+                            }
+                        });
                 datePickerDialog.show(getActivity().getSupportFragmentManager(),
                         TodoDatePickerDialog.class.getName());
             }
         });
 
+        //checkbox
+        mCheckDueDate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                setDueDateLayout(isChecked);
+            }
+        });
+    }
+
+    private void setDueDateLayout(boolean isSetDueDate) {
+        if (isSetDueDate) {
+            mLayoutDueDate.setVisibility(View.VISIBLE);
+            //TODO set date to button as saved value
+            mBtnDueDate.setText(mSetDueDate + "");
+        } else {
+            mLayoutDueDate.setVisibility(View.GONE);
+            //TODO set date to button as today
+            mBtnDueDate.setText(mSetDueDate + "");
+        }
+    }
+
+    private void setDialogButtonClickEvent(AlertDialog.Builder builder, View dialogLayout) {
         builder.setView(dialogLayout)
                 .setPositiveButton(R.string.dialog_add_todo_btn_add,
                         new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        publishTodo();
-                    }
-                })
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                publishTodo();
+                            }
+                        })
                 .setNegativeButton(R.string.dialog_add_todo_btn_cancel,
                         new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //do noting
-                    }
-                });
-        return builder.create();
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //do noting
+                            }
+                        });
     }
 
     @Override
@@ -144,6 +234,12 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        saveArgs(outState);
+    }
+
+    @Override
     public void onTodoAdded(TodoData added) {
         //do nothing
     }
@@ -160,12 +256,7 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     public void onSubjectAdded(SubjectData added) {
         Log.d("todo_tree", "onSubjectAdded() called, id : " + added.getId());
         updateSubjectList();
-        if (mSpinner != null) {
-            int pos = mSubjectSpinerAdapter.getPositionBySubjectId(added.getId());
-            Log.d("todo_tree", "onSubjectAdded() pos : " + pos);
-            if (pos != SubjectData.NON_ID)
-                mSpinner.setSelection(pos);
-        }
+        selectSubject(added.getId());
     }
     @Override
     public void onSubjectRemoved(SubjectData removed) {
@@ -179,6 +270,15 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
     private void updateSubjectList() {
         if (mSubjectSpinerAdapter != null)
             mSubjectSpinerAdapter.notifyDataSetChanged();
+    }
+
+    private void selectSubject(int id) {
+        if (mSpinner != null) {
+            int pos = mSubjectSpinerAdapter.getPositionBySubjectId(id);
+            Log.d("todo_tree", "selectSubject() pos : " + pos);
+            if (pos != SubjectData.NON_ID)
+                mSpinner.setSelection(pos);
+        }
     }
 
     private void publishTodo() {
