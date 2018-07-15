@@ -19,6 +19,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        tools:layout="@layout/todo_list" />
+        tools:layout="@layout/fargment_todo_list" />
 
 </LinearLayout>

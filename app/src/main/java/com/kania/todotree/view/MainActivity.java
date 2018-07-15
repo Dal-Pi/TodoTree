@@ -1,13 +1,10 @@
 package com.kania.todotree.view;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.kania.todotree.R;
 import com.kania.todotree.data.SubjectData;
@@ -23,9 +20,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new FloatingButtonClickListener());
     }
 
     @Override
@@ -61,14 +55,6 @@ public class MainActivity extends AppCompatActivity
     public void onCompleteAddTodo(TodoData completedTodo) {
         if (completedTodo != null) {
 
-        }
-    }
-
-    public class FloatingButtonClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            DialogFragment addTodoDialog = AddTodoDialog.newInstance(TodoData.NON_ID);
-            addTodoDialog.show(getSupportFragmentManager(), AddTodoDialog.class.getName());
         }
     }
 }

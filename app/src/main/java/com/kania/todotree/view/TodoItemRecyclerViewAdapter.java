@@ -17,6 +17,7 @@ import com.kania.todotree.data.RequestTodoData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Context.INPUT_METHOD_SERVICE;
@@ -32,10 +33,13 @@ public class TodoItemRecyclerViewAdapter
 
     private int mSelectedPos;
 
+    private ArrayList<OnSelectTodoListener> mSelectTodoListeners;
+
     public TodoItemRecyclerViewAdapter(Context context, List<TodoData> items) {
         mContext = context;
         mItems = items;
         mSelectedPos = NO_ITEM_SELECTED;
+        mSelectTodoListeners = new ArrayList<>();
     }
 
     @Override
@@ -131,6 +135,8 @@ public class TodoItemRecyclerViewAdapter
             }
             hideInputMethod(holder.mEditSubTodoName);
         }
+        notifySelectObservers(mSelectedPos == NO_ITEM_SELECTED ?
+                TodoData.NON_ID : holder.mItem.getId());
     }
 
     private void hideInputMethod(EditText edit) {
@@ -138,6 +144,16 @@ public class TodoItemRecyclerViewAdapter
                 (InputMethodManager) mContext.getSystemService(INPUT_METHOD_SERVICE);
         if (inputManager != null) {
             inputManager.hideSoftInputFromWindow(edit.getWindowToken(),0);
+        }
+    }
+
+    public void attachSelectListener(OnSelectTodoListener listener) {
+        mSelectTodoListeners.add(listener);
+    }
+
+    private void notifySelectObservers(int todoId) {
+        for (OnSelectTodoListener listener : mSelectTodoListeners) {
+            listener.onSelectTodo(todoId);
         }
     }
 
@@ -192,5 +208,9 @@ public class TodoItemRecyclerViewAdapter
         public String toString() {
             return super.toString() + " '" + mName.getText() + "'";
         }
+    }
+
+    public interface OnSelectTodoListener {
+        void onSelectTodo(int id);
     }
 }
