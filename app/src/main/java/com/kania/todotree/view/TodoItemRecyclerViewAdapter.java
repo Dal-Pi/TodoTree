@@ -108,7 +108,7 @@ public class TodoItemRecyclerViewAdapter
             holder.mFinishTodo.setVisibility(View.INVISIBLE);
         }
 
-        holder.mDateLayout.setVisibility(View.VISIBLE);
+        //holder.mDateLayout.setVisibility(View.VISIBLE);
     }
 
     private void select(final TodoViewHolder holder) {
