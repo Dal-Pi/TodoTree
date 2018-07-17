@@ -21,7 +21,7 @@ import com.kania.todotree.data.TodoProvider;
 
 public class CheckListFragment extends Fragment
         implements TodoProvider.IDataObserver,
-        TodoItemRecyclerViewAdapter.OnSelectTodoListener {
+        TodoItemRecyclerViewAdapter.OnTodoItemActionListener {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
 
@@ -70,7 +70,12 @@ public class CheckListFragment extends Fragment
         checkListView.setAdapter(mAdapter);
 
         mFab = view.findViewById(R.id.frag_fab_add_todo);
-        mFab.setOnClickListener(new FloatingButtonClickListener());
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEditTodoDialog(TodoData.NON_ID);
+            }
+        });
         return view;
     }
 
@@ -120,12 +125,14 @@ public class CheckListFragment extends Fragment
         }
     }
 
-    public class FloatingButtonClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            DialogFragment addTodoDialog = EditTodoDialog.newInstance(TodoData.NON_ID);
-            addTodoDialog.show(getActivity().getSupportFragmentManager(),
-                    EditTodoDialog.class.getName());
-        }
+    @Override
+    public void onSelectEditTodo(int id) {
+        showEditTodoDialog(id);
+    }
+
+    private void showEditTodoDialog(int todoId) {
+        DialogFragment editTodoDialog = EditTodoDialog.newInstance(todoId);
+        editTodoDialog.show(getActivity().getSupportFragmentManager(),
+                EditTodoDialog.class.getName());
     }
 }

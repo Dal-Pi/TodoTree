@@ -34,13 +34,13 @@ public class TodoItemRecyclerViewAdapter
 
     private int mSelectedPos;
 
-    private ArrayList<OnSelectTodoListener> mSelectTodoListeners;
+    private ArrayList<OnTodoItemActionListener> mTodoActionListeners;
 
     public TodoItemRecyclerViewAdapter(Context context, List<TodoData> items) {
         mContext = context;
         mItems = items;
         mSelectedPos = NO_ITEM_SELECTED;
-        mSelectTodoListeners = new ArrayList<>();
+        mTodoActionListeners = new ArrayList<>();
     }
 
     @Override
@@ -72,9 +72,24 @@ public class TodoItemRecyclerViewAdapter
         holder.mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.d("todo_tree", "checkbox selected, id:" + holder.mItem.getId() + ", checked:" + isChecked);
-                TodoProvider.getInstance().updateTodo(holder.mItem.getId(), isChecked);
-                setHandleButtonText(holder.mHandleTodo, holder.mItem);
+                Log.d("todo_tree", "checkbox selected, id:" + todo.getId() + ", checked:" + isChecked);
+                TodoProvider.getInstance().updateTodo(todo.getId(), isChecked);
+                setHandleButtonText(holder.mHandleTodo, todo);
+            }
+        });
+
+        holder.mHandleTodo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (todo.isCompleted()) {
+                    if (todo.isRootTodo()) {
+                        //TODO delete with option
+                    } else {
+                        //TODO delete without option
+                    }
+                } else {
+                    notifySelectEditObservers(todo.getId());
+                }
             }
         });
 
@@ -165,13 +180,19 @@ public class TodoItemRecyclerViewAdapter
         }
     }
 
-    public void attachSelectListener(OnSelectTodoListener listener) {
-        mSelectTodoListeners.add(listener);
+    public void attachSelectListener(OnTodoItemActionListener listener) {
+        mTodoActionListeners.add(listener);
     }
 
     private void notifySelectObservers(int todoId) {
-        for (OnSelectTodoListener listener : mSelectTodoListeners) {
+        for (OnTodoItemActionListener listener : mTodoActionListeners) {
             listener.onSelectTodo(todoId);
+        }
+    }
+
+    private void notifySelectEditObservers(int todoId) {
+        for (OnTodoItemActionListener listener : mTodoActionListeners) {
+            listener.onSelectEditTodo(todoId);
         }
     }
 
@@ -228,7 +249,8 @@ public class TodoItemRecyclerViewAdapter
         }
     }
 
-    public interface OnSelectTodoListener {
+    public interface OnTodoItemActionListener {
         void onSelectTodo(int id);
+        void onSelectEditTodo(int id);
     }
 }
