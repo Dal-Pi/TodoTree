@@ -141,8 +141,12 @@ public class TodoProvider {
             observer.onTodoAdded(todo, pos);
         }
     }
-    public void deleteTodo(TodoData requested) {
+    public void deleteTodo(int requestTodoId) {
         //TODO use DB
+        TodoData requested = mTodoMap.get(requestTodoId);
+        if (requested == null) {
+            Log.e("todo_tree", "already deleted todo. id:" + requestTodoId);
+        }
         if (requested.getParent() != null) {
             requested.getParent().removeChild(requested);
         }
@@ -151,6 +155,12 @@ public class TodoProvider {
         for (IDataObserver observer : mObservers) {
             observer.onTodoRemoved(requested, pos);
         }
+    }
+
+    public void updateTodo(int requestTodoId, boolean completed) {
+        //TODO use DB
+        TodoData target = mTodoMap.get(requestTodoId);
+        target.setCompleted(completed);
     }
     public void updateTodo(RequestTodoData requested) {
         //TODO use DB

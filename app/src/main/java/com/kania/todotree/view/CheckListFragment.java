@@ -123,9 +123,9 @@ public class CheckListFragment extends Fragment
     public class FloatingButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            DialogFragment addTodoDialog = AddTodoDialog.newInstance(TodoData.NON_ID);
+            DialogFragment addTodoDialog = EditTodoDialog.newInstance(TodoData.NON_ID);
             addTodoDialog.show(getActivity().getSupportFragmentManager(),
-                    AddTodoDialog.class.getName());
+                    EditTodoDialog.class.getName());
         }
     }
 }

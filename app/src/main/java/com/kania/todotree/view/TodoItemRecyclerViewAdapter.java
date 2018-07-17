@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -68,6 +69,15 @@ public class TodoItemRecyclerViewAdapter
             }
         });
 
+        holder.mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.d("todo_tree", "checkbox selected, id:" + holder.mItem.getId() + ", checked:" + isChecked);
+                TodoProvider.getInstance().updateTodo(holder.mItem.getId(), isChecked);
+                setHandleButtonText(holder.mHandleTodo, holder.mItem);
+            }
+        });
+
         holder.mAddSubTodo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,7 +93,7 @@ public class TodoItemRecyclerViewAdapter
         });
     }
 
-    private void decorateTodoItem(final TodoViewHolder holder, TodoData todo) {
+    private void decorateTodoItem(final TodoViewHolder holder, final TodoData todo) {
         int color = todo.getSubject().getColor();
         holder.mDivider.setVisibility(todo.getDepth() == 0 ? View.VISIBLE : View.GONE);
         holder.mDueDate.setText(TodoDateUtil.getFormatedDateString(mContext, todo.getDueDate()));
@@ -93,22 +103,30 @@ public class TodoItemRecyclerViewAdapter
         ViewUtil.setCheckBoxColor(holder.mCheckBox, color, color);
         holder.mName.setText(todo.getName());
         holder.mName.setTextColor(color);
-        holder.mFinishTodo.setTextColor(color);
+        setHandleButtonText(holder.mHandleTodo, todo);
+        holder.mHandleTodo.setTextColor(color);
         holder.mAddSubTodo.setTextColor(color);
         ViewUtil.setIndentation(holder.mView, todo.getDepth());
 
-        holder.mIdDebug.setText(todo.getId() + " selected");
-        holder.mIdDebug.setTextColor(color);
+        //holder.mIdDebug.setText(todo.getId() + " selected");
+        //holder.mIdDebug.setTextColor(color);
 
         if (TodoProvider.getInstance().getSelected() == todo.getId()) {
             holder.mMenuLayout.setVisibility(View.VISIBLE);
-            holder.mFinishTodo.setVisibility(View.VISIBLE);
+            holder.mHandleTodo.setVisibility(View.VISIBLE);
         } else {
             holder.mMenuLayout.setVisibility(View.GONE);
-            holder.mFinishTodo.setVisibility(View.INVISIBLE);
+            holder.mHandleTodo.setVisibility(View.INVISIBLE);
         }
 
         //holder.mDateLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void setHandleButtonText(final Button btnHandle, final TodoData todo) {
+        if (todo.isCompleted())
+            if (todo.isRootTodo()) btnHandle.setText(R.string.item_menu_btn_done);
+            else btnHandle.setText(R.string.item_menu_btn_delete);
+        else btnHandle.setText(R.string.item_menu_btn_edit);
     }
 
     private void select(final TodoViewHolder holder) {
@@ -179,7 +197,7 @@ public class TodoItemRecyclerViewAdapter
         public final TextView mIdDebug;
         public final EditText mEditSubTodoName;
         public final Button mAddSubTodo;
-        public final Button mFinishTodo;
+        public final Button mHandleTodo;
 
         public TodoData mItem;
 
@@ -201,7 +219,7 @@ public class TodoItemRecyclerViewAdapter
             mIdDebug =  view.findViewById(R.id.item_text_selected_id_debug);
             mEditSubTodoName = view.findViewById(R.id.item_edit_sub_todo_name);
             mAddSubTodo = view.findViewById(R.id.item_btn_add_sub_todo);
-            mFinishTodo = view.findViewById(R.id.item_btn_finish_todo);
+            mHandleTodo = view.findViewById(R.id.item_btn_handle_todo);
         }
 
         @Override

@@ -34,12 +34,12 @@
                 android:layout_centerVertical="true" />
             <Button
                 style="@style/TodoTreeButtonBarStyle"
-                android:id="@+id/item_btn_finish_todo"
+                android:id="@+id/item_btn_handle_todo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_alignParentEnd="true"
-                android:text="@string/item_menu_finish_todo"/>
+                android:text="@string/item_menu_btn_delete"/>
             <TextView
                 android:id="@+id/item_text_name"
                 android:layout_width="wrap_content"
@@ -50,7 +50,7 @@
                 android:paddingTop="@dimen/todo_item_margin_padding"
                 android:paddingBottom="@dimen/todo_item_margin_padding"
                 android:layout_toEndOf="@id/item_checkbox_todo"
-                android:layout_toStartOf="@id/item_btn_finish_todo"
+                android:layout_toStartOf="@id/item_btn_handle_todo"
                 android:layout_centerVertical="true"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
         </RelativeLayout>
@@ -96,7 +96,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_alignParentEnd="true"
-                    android:text="@string/item_menu_add_sub_todo"/>
+                    android:text="@string/item_menu_btn_add_sub_todo"/>
                 <android.support.design.widget.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

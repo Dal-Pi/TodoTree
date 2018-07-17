@@ -12,7 +12,7 @@ import com.kania.todotree.data.TodoData;
 
 public class MainActivity extends AppCompatActivity
         implements AddSubjectDialog.OnCompleteAddSubject,
-        AddTodoDialog.OnCompleteAddTodo {
+        EditTodoDialog.OnCompleteAddTodo {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

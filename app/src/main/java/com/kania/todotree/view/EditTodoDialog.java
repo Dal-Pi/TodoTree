@@ -39,10 +39,10 @@ import java.util.List;
  * Activities that contain this fragment must implement the
  * {@link OnCompleteAddTodo} interface
  * to handle interaction events.
- * Use the {@link AddTodoDialog#newInstance} factory method to
+ * Use the {@link EditTodoDialog#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataObserver,
+public class EditTodoDialog extends DialogFragment implements TodoProvider.IDataObserver,
         View.OnClickListener,
         TodoDatePickerDialog.OnDateSetListener {
     private static final String ARG_BASE_TODO_ID = "baseTodoId";
@@ -65,12 +65,12 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
 
     private SubjectSpinerAdapter mSubjectSpinerAdapter;
 
-    public AddTodoDialog() {
+    public EditTodoDialog() {
         // Required empty public constructor
     }
 
-    public static AddTodoDialog newInstance(int baseTodoId) {
-        AddTodoDialog fragment = new AddTodoDialog();
+    public static EditTodoDialog newInstance(int baseTodoId) {
+        EditTodoDialog fragment = new EditTodoDialog();
         Bundle args = new Bundle();
         args.putInt(ARG_BASE_TODO_ID, baseTodoId);
         fragment.setArguments(args);
@@ -212,6 +212,31 @@ public class AddTodoDialog extends DialogFragment implements TodoProvider.IDataO
                                 //do noting
                             }
                         });
+        if (mBaseTodoId != TodoData.NON_ID) {
+            builder.setNeutralButton(R.string.dialog_add_subject_btn_Delete,
+                    new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    AlertDialog.Builder confirmDialogBuilder = new AlertDialog.Builder(getActivity())
+                            .setPositiveButton(R.string.dialog_add_subject_btn_Delete,
+                                    new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    TodoProvider.getInstance().deleteTodo(mBaseTodoId);
+                                }
+                            })
+                            .setNegativeButton(R.string.dialog_add_todo_btn_cancel,
+                                    new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //do nothing
+                                }
+                            });
+                    AlertDialog confirmDialog = confirmDialogBuilder.create();
+                    confirmDialog.show();
+                }
+            });
+        }
     }
 
     @Override

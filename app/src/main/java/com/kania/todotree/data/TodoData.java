@@ -133,6 +133,7 @@ public class TodoData implements ITodoData {
         this.depth = evaluated;
     }
 
+    public boolean isRootTodo() { return (parent == null);}
 
     public int getChildrenCount() {
         return getChildrenCountRecur(this);
