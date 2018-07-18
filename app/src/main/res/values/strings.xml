@@ -30,6 +30,9 @@
     <string name="dialog_add_subject_btn_Delete">@string/base_delete</string>
     <string name="dialog_add_subject_btn_cancel">@string/base_cancel</string>
 
+    <string name="dialog_delete_todo_title">@string/base_delete</string>
+    <string name="dialog_delete_todo_text">Really delete?</string>
+
     <string name="dialog_add_title_target_date_dummy">Click to select date</string>
 
     <!-- TODO: Remove or change this placeholder text -->

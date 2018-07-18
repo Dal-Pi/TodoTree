@@ -99,7 +99,9 @@ public class CheckListFragment extends Fragment
     }
     @Override
     public void onTodoRemoved(TodoData removed, int position) {
-        mAdapter.notifyItemChanged(position);
+        //mAdapter.notifyItemChanged(position);
+        mAdapter.cancelSelect();
+        mAdapter.notifyDataSetChanged();
     }
     @Override
     public void onTodoUpdated(RequestTodoData prev, TodoData updated, int position) {

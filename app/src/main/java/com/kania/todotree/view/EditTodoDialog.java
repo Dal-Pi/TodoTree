@@ -218,6 +218,8 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     AlertDialog.Builder confirmDialogBuilder = new AlertDialog.Builder(getActivity())
+                            .setTitle(R.string.dialog_delete_todo_title)
+                            .setMessage(R.string.dialog_delete_todo_text)
                             .setPositiveButton(R.string.dialog_add_subject_btn_Delete,
                                     new DialogInterface.OnClickListener() {
                                 @Override

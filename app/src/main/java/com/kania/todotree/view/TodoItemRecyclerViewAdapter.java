@@ -172,6 +172,12 @@ public class TodoItemRecyclerViewAdapter
                 TodoData.NON_ID : holder.mItem.getId());
     }
 
+    public void cancelSelect() {
+        mSelectedPos = NO_ITEM_SELECTED;
+        TodoProvider.getInstance().cancelSelect();
+        notifySelectObservers(TodoData.NON_ID);
+    }
+
     private void hideInputMethod(EditText edit) {
         InputMethodManager inputManager =
                 (InputMethodManager) mContext.getSystemService(INPUT_METHOD_SERVICE);
@@ -179,6 +185,8 @@ public class TodoItemRecyclerViewAdapter
             inputManager.hideSoftInputFromWindow(edit.getWindowToken(),0);
         }
     }
+
+
 
     public void attachSelectListener(OnTodoItemActionListener listener) {
         mTodoActionListeners.add(listener);
