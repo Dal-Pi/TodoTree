@@ -2,45 +2,53 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical" >
     <LinearLayout
         style="@style/TodoTreeDialogLayoutStyle"
-        android:orientation="vertical">
-        <TextView
-            style="@style/TodoTreeDialogTitleStyle"
-            android:text="@string/dialog_add_todo_title_subject" />
-        <RelativeLayout
+        android:orientation="vertical" >
+        <LinearLayout
+            android:id="@+id/dialog_add_todo_layout_subject"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-            <ImageButton
-                android:id="@+id/dialog_add_todo_btn_subject"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_add_circle_black_48dp"
-                android:background="?selectableItemBackgroundBorderless"/>
-            <Spinner
-                android:id="@+id/dialog_add_todo_spinner_subject"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+            <TextView
+                style="@style/TodoTreeDialogTitleStyle"
+                android:text="@string/dialog_edit_todo_title_subject" />
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_toStartOf="@id/dialog_add_todo_btn_subject"
-                android:layout_centerVertical="true"
-                android:prompt="@string/dialog_add_todo_prompt_subject"/>
-        </RelativeLayout>
+                android:layout_height="wrap_content" >
+                <ImageButton
+                    android:id="@+id/dialog_add_todo_btn_subject"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_add_circle_black_48dp"
+                    android:background="?selectableItemBackgroundBorderless"/>
+                <Spinner
+                    android:id="@+id/dialog_add_todo_spinner_subject"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@id/dialog_add_todo_btn_subject"
+                    android:layout_centerVertical="true"
+                    android:prompt="@string/dialog_edit_todo_prompt_subject"/>
+            </RelativeLayout>
+        </LinearLayout>
+
+
         <TextView
             style="@style/TodoTreeDialogTitleStyle"
-            android:text="@string/dialog_add_todo_title_name" />
+            android:text="@string/dialog_edit_todo_title_name" />
         <EditText
             style="@style/TodoTreeDialogEditStyle"
             android:id="@+id/dialog_add_todo_edit_name"
-            android:hint="@string/dialog_add_todo_title_name" />
+            android:hint="@string/dialog_edit_todo_title_name" />
         <android.support.v7.widget.AppCompatCheckBox
             android:id="@+id/dialog_add_todo_check_due_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/dialog_add_todo_check_due_date"
+            android:text="@string/dialog_edit_todo_check_due_date"
             android:checked="false"/>
         <LinearLayout
             android:id="@+id/dialog_add_todo_layout_due_date"
@@ -50,7 +58,7 @@
             android:orientation="vertical" >
             <TextView
                 style="@style/TodoTreeDialogTitleStyle"
-                android:text="@string/dialog_add_todo_title_due_date" />
+                android:text="@string/dialog_edit_todo_title_due_date" />
             <Button
                 style="@style/TodoTreeButtonBarStyle"
                 android:id="@+id/dialog_add_todo_btn_due_date"

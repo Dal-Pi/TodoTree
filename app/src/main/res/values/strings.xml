@@ -3,6 +3,7 @@
     <string name="action_settings">Settings</string>
 
     <string name="base_add">Add</string>
+    <string name="base_update">Update</string>
     <string name="base_cancel">Cancel</string>
     <string name="base_delete">Delete</string>
 
@@ -14,21 +15,22 @@
     <string name="item_due_date_defualt">Due Date</string>
     <string name="item_last_update_defualt">Updated</string>
 
-    <string name="dialog_add_todo_title_subject">Subject</string>
-    <string name="dialog_add_todo_prompt_subject">Select Subject</string>
-    <string name="dialog_add_todo_title_name">Todo Name</string>
-    <string name="dialog_add_todo_hint_name">Input todo title</string>
-    <string name="dialog_add_todo_check_due_date">Set Due Date</string>
-    <string name="dialog_add_todo_title_due_date">Due Date</string>
-    <string name="dialog_add_todo_btn_add">@string/base_add</string>
-    <string name="dialog_add_todo_btn_cancel">@string/base_cancel</string>
+    <string name="dialog_edit_todo_title_subject">Subject</string>
+    <string name="dialog_edit_todo_prompt_subject">Select Subject</string>
+    <string name="dialog_edit_todo_title_name">Todo Name</string>
+    <string name="dialog_edit_todo_hint_name">Input todo title</string>
+    <string name="dialog_edit_todo_check_due_date">Set Due Date</string>
+    <string name="dialog_edit_todo_title_due_date">Due Date</string>
+    <string name="dialog_edit_todo_btn_add">@string/base_add</string>
+    <string name="dialog_edit_todo_btn_update">@string/base_update</string>
+    <string name="dialog_edit_todo_btn_cancel">@string/base_cancel</string>
 
-    <string name="dialog_add_subject_title_name">Subject Name</string>
-    <string name="dialog_add_subject_hint_name">Input subject title</string>
-    <string name="dialog_add_subject_title_color">Color</string>
-    <string name="dialog_add_subject_btn_add">@string/base_add</string>
-    <string name="dialog_add_subject_btn_Delete">@string/base_delete</string>
-    <string name="dialog_add_subject_btn_cancel">@string/base_cancel</string>
+    <string name="dialog_edit_subject_title_name">Subject Name</string>
+    <string name="dialog_edit_subject_hint_name">Input subject title</string>
+    <string name="dialog_edit_subject_title_color">Color</string>
+    <string name="dialog_edit_subject_btn_add">@string/base_add</string>
+    <string name="dialog_edit_subject_btn_Delete">@string/base_delete</string>
+    <string name="dialog_edit_subject_btn_cancel">@string/base_cancel</string>
 
     <string name="dialog_delete_todo_title">@string/base_delete</string>
     <string name="dialog_delete_todo_text">Really delete?</string>

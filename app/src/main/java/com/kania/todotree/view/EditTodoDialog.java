@@ -92,7 +92,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
             mSetDueDate = savedInstanceState.getLong(ARG_SET_DUE_DATE);
         } else {
             mBaseTodoId = getArguments().getInt(ARG_BASE_TODO_ID);
-            if (mBaseTodoId != TodoData.NON_ID) {
+            if (isEditDialog()) {
                 TodoData baseTodo = TodoProvider.getInstance().getTodo(mBaseTodoId);
                 mSelectedSubjectId = baseTodo.getSubject().getId();
                 mEditedName = baseTodo.getName();
@@ -155,6 +155,20 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
                         AddSubjectDialog.class.getName());
             }
         });
+
+        View subjectLayout = dialogLayout.findViewById(R.id.dialog_add_todo_layout_subject);
+        if (isEditDialog()) {
+            TodoData baseTodo = TodoProvider.getInstance().getTodo(mBaseTodoId);
+            btnAddSubject.setEnabled(baseTodo.isRootTodo());
+            mSpinner.setEnabled(baseTodo.isRootTodo());
+            subjectLayout.setVisibility(baseTodo.isRootTodo() ? View.VISIBLE : View.GONE);
+        } else {
+            subjectLayout.setVisibility(View.VISIBLE);
+            btnAddSubject.setEnabled(true);
+            mSpinner.setEnabled(true);
+        }
+
+
     }
 
     private void setTodoNameView(View dialogLayout) {
@@ -197,48 +211,57 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     }
 
     private void setDialogButtonClickEvent(AlertDialog.Builder builder, View dialogLayout) {
-        builder.setView(dialogLayout)
-                .setPositiveButton(R.string.dialog_add_todo_btn_add,
-                        new DialogInterface.OnClickListener() {
+        builder.setView(dialogLayout);
+        setPositiveButtonClickEvent(builder);
+        setNegativeButtonClickEvent(builder);
+        setNeutralButtonClickEvent(builder);
+    }
+
+    private void setPositiveButtonClickEvent(AlertDialog.Builder builder) {
+        int positiveStringId = isAddDialog() ?
+                R.string.dialog_edit_todo_btn_add : R.string.dialog_edit_todo_btn_update;
+        builder.setPositiveButton(positiveStringId, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                publishTodo();
+            }
+        });
+    }
+    private void setNegativeButtonClickEvent(AlertDialog.Builder builder) {
+        int NegativeStringId = R.string.dialog_edit_todo_btn_cancel;
+        builder.setNegativeButton(NegativeStringId, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //do noting
+            }
+        });
+    }
+    private void setNeutralButtonClickEvent(AlertDialog.Builder builder) {
+        if (isAddDialog())
+            return;
+        int neutralStringId = R.string.dialog_edit_subject_btn_Delete;
+        builder.setNeutralButton(neutralStringId, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                AlertDialog.Builder confirmDialogBuilder = new AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.dialog_delete_todo_title)
+                        .setMessage(R.string.dialog_delete_todo_text)
+                        .setPositiveButton(R.string.dialog_edit_subject_btn_Delete, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                publishTodo();
+                                TodoProvider.getInstance().deleteTodo(mBaseTodoId);
                             }
                         })
-                .setNegativeButton(R.string.dialog_add_todo_btn_cancel,
-                        new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.dialog_edit_todo_btn_cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //do noting
+                                //do nothing
                             }
                         });
-        if (mBaseTodoId != TodoData.NON_ID) {
-            builder.setNeutralButton(R.string.dialog_add_subject_btn_Delete,
-                    new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    AlertDialog.Builder confirmDialogBuilder = new AlertDialog.Builder(getActivity())
-                            .setTitle(R.string.dialog_delete_todo_title)
-                            .setMessage(R.string.dialog_delete_todo_text)
-                            .setPositiveButton(R.string.dialog_add_subject_btn_Delete,
-                                    new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    TodoProvider.getInstance().deleteTodo(mBaseTodoId);
-                                }
-                            })
-                            .setNegativeButton(R.string.dialog_add_todo_btn_cancel,
-                                    new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //do nothing
-                                }
-                            });
-                    AlertDialog confirmDialog = confirmDialogBuilder.create();
-                    confirmDialog.show();
-                }
-            });
-        }
+                AlertDialog confirmDialog = confirmDialogBuilder.create();
+                confirmDialog.show();
+            }
+        });
     }
 
     @Override
@@ -337,17 +360,38 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     private void publishTodo() {
         SubjectData subject = TodoProvider.getInstance().getSubject(mSelectedSubjectId);
         String todoName = mEditName.getText().toString();
-        if (todoName.trim().isEmpty()) {
-            Toast.makeText(getActivity(),
-                    "cannot make empty name", Toast.LENGTH_SHORT).show();
+        if (isValidName(todoName) == false)
             return;
+
+        RequestTodoData requestTodoData;
+        if (isEditDialog()) {
+            TodoData baseTodo = TodoProvider.getInstance().getTodo(mBaseTodoId);
+            requestTodoData = new RequestTodoData(subject, todoName, baseTodo.getParent(),
+                    TodoDateUtil.getCurrent());
+            requestTodoData.setId(baseTodo.getId());
+        } else {
+            requestTodoData = new RequestTodoData(subject, todoName, null,
+                    TodoDateUtil.getCurrent());
         }
-        RequestTodoData requestTodoData = new RequestTodoData(subject, todoName, null,
-                TodoDateUtil.getCurrent());
         if (mCheckDueDate.isChecked()) {
             requestTodoData.setDueDate(mSetDueDate);
         }
-        TodoProvider.getInstance().addTodo(requestTodoData);
+        TodoProvider.getInstance().editTodo(requestTodoData);
+    }
+
+    private boolean isValidName(String name) {
+        if (name.trim().isEmpty()) {
+            Toast.makeText(getActivity(), "cannot make empty name", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isEditDialog() {
+        return !isAddDialog();
+    }
+    private boolean isAddDialog() {
+        return mBaseTodoId == TodoData.NON_ID;
     }
 
     /**

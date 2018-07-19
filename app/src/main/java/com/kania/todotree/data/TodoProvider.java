@@ -72,7 +72,7 @@ public class TodoProvider {
     }
 
     private int removeTodo(TodoData todo) {
-        if (todo.getParent() == null) {
+        if (todo.isRootTodo()) {
             mRootTodoList.remove(todo);
         }
         int pos = mAllTodoList.indexOf(todo);
@@ -123,7 +123,13 @@ public class TodoProvider {
         mSelected = NO_SELECTED;
     }
 
-    public void addTodo(RequestTodoData requested) {
+    public void editTodo(RequestTodoData requested) {
+        if (requested.id == TodoData.NON_ID)
+            addTodo(requested);
+        else
+            updateTodo(requested);
+    }
+    private void addTodo(RequestTodoData requested) {
         //TODO use DB
         int maxId  = 0;
         for (TodoData td : mAllTodoList) {
@@ -147,14 +153,40 @@ public class TodoProvider {
         if (requested == null) {
             Log.e("todo_tree", "already deleted todo. id:" + requestTodoId);
         }
+
+        for (TodoData child : requested.getChildren()) {
+            deleteTodo(child.getId());
+        }
+        requested.getChildren().clear();
+        //TODO real remove itself
+
+        /*
+        //TODO concurrent exception
+        Iterator<TodoData> it = requested.getChildren().iterator();
+        while(it.hasNext()) {
+            TodoData child = it.next();
+            deleteTodo(child.getId());
+        }
+        */
+
+        /*
+        for (TodoData child : requested.getChildren()) {
+            requested.removeChild(child);
+            deleteTodo(child.getId());
+        }
+        */
+
+        /*
         if (requested.getParent() != null) {
             requested.getParent().removeChild(requested);
         }
+        */
         int pos = removeTodo(requested);
 
         for (IDataObserver observer : mObservers) {
             observer.onTodoRemoved(requested, pos);
         }
+        Log.d("todo_tree", "deleteTodo() deleted todo id:" + requestTodoId);
     }
 
     public void updateTodo(int requestTodoId, boolean completed) {
@@ -162,25 +194,23 @@ public class TodoProvider {
         TodoData target = mTodoMap.get(requestTodoId);
         target.setCompleted(completed);
     }
-    public void updateTodo(RequestTodoData requested) {
+    private void updateTodo(RequestTodoData requested) {
         //TODO use DB
-        if (requested.id != TodoData.NON_ID) {
-            RequestTodoData prev = new RequestTodoData(requested.subject,
-                    requested.name, requested.parent, requested.updatedDate);
-            prev.setId(requested.id);
-            prev.setDueDate(requested.targetDate);
+        RequestTodoData prev = new RequestTodoData(requested.subject,
+                requested.name, requested.parent, requested.updatedDate);
+        prev.setId(requested.id);
+        prev.setDueDate(requested.targetDate);
 
-            TodoData target = mTodoMap.get(requested.id);
-            target.setSubject(requested.subject);
-            target.setName(requested.name);
-            //target.setParent(requested.parent); //TODO it can be changed?
-            target.setDueDate(requested.targetDate);
-            target.setLastUpdated(requested.updatedDate);
+        TodoData target = mTodoMap.get(requested.id);
+        target.setSubject(requested.subject);
+        target.setName(requested.name);
+        target.setParent(requested.parent); //TODO it can be changed?
+        target.setDueDate(requested.targetDate);
+        target.setLastUpdated(requested.updatedDate);
 
-            int pos = mAllTodoList.indexOf(target);
-            for (IDataObserver observer : mObservers) {
-                observer.onTodoUpdated(prev, target, pos);
-            }
+        int pos = mAllTodoList.indexOf(target);
+        for (IDataObserver observer : mObservers) {
+            observer.onTodoUpdated(prev, target, pos);
         }
     }
 

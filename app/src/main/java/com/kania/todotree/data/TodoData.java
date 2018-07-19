@@ -3,6 +3,7 @@ package com.kania.todotree.data;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class TodoData implements ITodoData {
 
@@ -55,6 +56,11 @@ public class TodoData implements ITodoData {
         this.subject.removeListener(this);
         this.subject = subject;
         this.subject.addListener(this);
+        Iterator<TodoData> it = children.iterator();
+        while (it.hasNext()) {
+            TodoData child = it.next();
+            child.setSubject(subject);
+        }
     }
 
     public String getName() {

@@ -101,7 +101,7 @@ public class TodoItemRecyclerViewAdapter
                     return;
                 RequestTodoData requestTodoData = new RequestTodoData(todo.getSubject(), name, todo,
                         TodoDateUtil.getCurrent());
-                TodoProvider.getInstance().addTodo(requestTodoData);
+                TodoProvider.getInstance().editTodo(requestTodoData);
                 holder.mEditSubTodoName.setText("");
                 select(holder);
             }
@@ -123,8 +123,9 @@ public class TodoItemRecyclerViewAdapter
         holder.mAddSubTodo.setTextColor(color);
         ViewUtil.setIndentation(holder.mView, todo.getDepth());
 
-        //holder.mIdDebug.setText(todo.getId() + " selected");
-        //holder.mIdDebug.setTextColor(color);
+        //TODO debug
+        holder.mIdDebug.setText(todo.getId() + " selected");
+        holder.mIdDebug.setTextColor(color);
 
         if (TodoProvider.getInstance().getSelected() == todo.getId()) {
             holder.mMenuLayout.setVisibility(View.VISIBLE);

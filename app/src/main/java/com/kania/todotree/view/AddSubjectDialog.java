@@ -73,14 +73,14 @@ public class AddSubjectDialog extends DialogFragment {
         mSpinnerColor.setAdapter(subjectSpinerAdapter);
 
         builder.setView(dialogLayout)
-                .setPositiveButton(R.string.dialog_add_subject_btn_add,
+                .setPositiveButton(R.string.dialog_edit_subject_btn_add,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 publishSubject();
                             }
                         })
-                .setNegativeButton(R.string.dialog_add_subject_btn_cancel,
+                .setNegativeButton(R.string.dialog_edit_subject_btn_cancel,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
