@@ -98,13 +98,13 @@ public class CheckListFragment extends Fragment
         mAdapter.notifyItemChanged(position);
     }
     @Override
-    public void onTodoRemoved(TodoData removed, int position) {
+    public void onTodoRemoved(TodoData removed) {
         //mAdapter.notifyItemChanged(position);
         mAdapter.cancelSelect();
         mAdapter.notifyDataSetChanged();
     }
     @Override
-    public void onTodoUpdated(RequestTodoData prev, TodoData updated, int position) {
+    public void onTodoUpdated(RequestTodoData prev, TodoData updated) {
         //mAdapter.notifyItemChanged(position);
         mAdapter.notifyDataSetChanged();
     }

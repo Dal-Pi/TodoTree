@@ -298,11 +298,11 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         //do nothing
     }
     @Override
-    public void onTodoRemoved(TodoData removed, int position) {
+    public void onTodoRemoved(TodoData removed) {
         //do nothing
     }
     @Override
-    public void onTodoUpdated(RequestTodoData prev, TodoData updated, int position) {
+    public void onTodoUpdated(RequestTodoData prev, TodoData updated) {
         //do nothing
     }
 

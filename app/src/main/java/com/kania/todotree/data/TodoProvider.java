@@ -2,6 +2,8 @@ package com.kania.todotree.data;
 
 import android.util.Log;
 
+import com.kania.todotree.TodoTree;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -151,42 +153,36 @@ public class TodoProvider {
         //TODO use DB
         TodoData requested = mTodoMap.get(requestTodoId);
         if (requested == null) {
-            Log.e("todo_tree", "already deleted todo. id:" + requestTodoId);
+            Log.e(TodoTree.TAG, "already deleted todo. id:" + requestTodoId);
         }
 
-        for (TodoData child : requested.getChildren()) {
-            deleteTodo(child.getId());
-        }
-        requested.getChildren().clear();
-        //TODO real remove itself
+        ArrayList<TodoData> deleteTodoList = new ArrayList<>();
+        setDeleteTodoList(deleteTodoList, requested);
+        //debug
+        for (TodoData todo : deleteTodoList)
+            Log.d(TodoTree.TAG, "deletelist : " + todo.toString());
 
-        /*
-        //TODO concurrent exception
-        Iterator<TodoData> it = requested.getChildren().iterator();
-        while(it.hasNext()) {
-            TodoData child = it.next();
-            deleteTodo(child.getId());
-        }
-        */
+        for (TodoData todo : deleteTodoList) {
+            //TODO use DB
+            //delete DB
 
-        /*
-        for (TodoData child : requested.getChildren()) {
-            requested.removeChild(child);
-            deleteTodo(child.getId());
+            //delete on list
+            //disconnect from parent
+            if (todo.isRootTodo() == false)
+                todo.getParent().removeChild(todo);
+            removeTodo(todo);
         }
-        */
-
-        /*
-        if (requested.getParent() != null) {
-            requested.getParent().removeChild(requested);
-        }
-        */
-        int pos = removeTodo(requested);
 
         for (IDataObserver observer : mObservers) {
-            observer.onTodoRemoved(requested, pos);
+            observer.onTodoRemoved(requested);
         }
         Log.d("todo_tree", "deleteTodo() deleted todo id:" + requestTodoId);
+    }
+
+    private void setDeleteTodoList(ArrayList<TodoData> deleteTodoList, TodoData target) {
+        for (TodoData todo : target.getChildren())
+            setDeleteTodoList(deleteTodoList, todo);
+        deleteTodoList.add(target);
     }
 
     public void updateTodo(int requestTodoId, boolean completed) {
@@ -210,7 +206,7 @@ public class TodoProvider {
 
         int pos = mAllTodoList.indexOf(target);
         for (IDataObserver observer : mObservers) {
-            observer.onTodoUpdated(prev, target, pos);
+            observer.onTodoUpdated(prev, target);
         }
     }
 
@@ -246,8 +242,8 @@ public class TodoProvider {
 
     public interface IDataObserver {
         void onTodoAdded(TodoData added, int position);
-        void onTodoRemoved(TodoData removed, int position);
-        void onTodoUpdated(RequestTodoData prev, TodoData updated, int position);
+        void onTodoRemoved(TodoData removed);
+        void onTodoUpdated(RequestTodoData prev, TodoData updated);
 
         void onSubjectAdded(SubjectData added);
         void onSubjectRemoved(SubjectData removed);
