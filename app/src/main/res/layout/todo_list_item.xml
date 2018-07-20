@@ -22,6 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?selectableItemBackground"
+            android:paddingStart="@dimen/todo_item_margin_padding"
             android:orientation="horizontal">
             <android.support.v7.widget.AppCompatCheckBox
                 android:id="@+id/item_checkbox_todo"
@@ -29,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:paddingTop="@dimen/todo_item_margin_padding"
                 android:paddingBottom="@dimen/todo_item_margin_padding"
-                android:paddingLeft="@dimen/todo_item_margin_padding"
+                android:paddingStart="@dimen/todo_item_margin_padding"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true" />
             <Button

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
@@ -15,6 +16,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+
+import com.kania.todotree.R;
 
 public class ViewUtil {
     public static void changeStatusbarColor(Activity activity) {
@@ -32,15 +35,15 @@ public class ViewUtil {
         item.setIcon(d);
     }
 
-    public static void setCheckBoxColor(AppCompatCheckBox checkBox, int uncheckedColor, int checkedColor) {
+    public static void setCheckBoxColor(AppCompatCheckBox checkBox, int targetColor) {
         ColorStateList colorStateList = new ColorStateList(
                 new int[][] {
-                        new int[] { -android.R.attr.state_checked }, // unchecked
-                        new int[] {  android.R.attr.state_checked }  // checked
+                        new int[] {  android.R.attr.state_enabled }, // enabled
+                        new int[] { -android.R.attr.state_enabled }  // disabled
                 },
                 new int[] {
-                        uncheckedColor,
-                        checkedColor
+                        targetColor,
+                        Color.LTGRAY
                 }
         );
         checkBox.setSupportButtonTintList(colorStateList);

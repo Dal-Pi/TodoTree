@@ -12,30 +12,4 @@
         android:text="Hello World!"
         android:layout_centerInParent="true" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:focusableInTouchMode="true"
-        android:orientation="horizontal">
-        <EditText
-            android:id="@+id/panel_edit_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="@dimen/text_margin"
-            android:layout_marginEnd="@dimen/text_margin"
-            android:lines="1"
-            android:inputType="text" />
-        <Button
-            style="@style/TodoTreeButtonBarStyle"
-            android:id="@+id/panel_btn_simple_add"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="add"/>
-    </LinearLayout>
-
-
 </RelativeLayout>

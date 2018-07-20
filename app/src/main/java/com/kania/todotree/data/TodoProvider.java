@@ -185,10 +185,14 @@ public class TodoProvider {
         deleteTodoList.add(target);
     }
 
-    public void updateTodo(int requestTodoId, boolean completed) {
+    public void completeTodo(int requestTodoId, boolean completed) {
         //TODO use DB
         TodoData target = mTodoMap.get(requestTodoId);
         target.setCompleted(completed);
+
+//        for (IDataObserver observer : mObservers) {
+//            observer.onTodoUpdated(prev, target);
+//        }
     }
     private void updateTodo(RequestTodoData requested) {
         //TODO use DB

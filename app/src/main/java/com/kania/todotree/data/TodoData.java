@@ -84,6 +84,13 @@ public class TodoData implements ITodoData {
     public void setCompleted(boolean completed) {
         isCompleted = completed;
     }
+    public boolean isCheckable() {
+        boolean ret = true;
+        for (TodoData child : children)
+            if (child.isCompleted() == false)
+                return false;
+        return ret;
+    }
 
     public long getDueDate() {
         return dueDate;

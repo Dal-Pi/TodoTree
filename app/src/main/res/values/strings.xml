@@ -33,7 +33,12 @@
     <string name="dialog_edit_subject_btn_cancel">@string/base_cancel</string>
 
     <string name="dialog_delete_todo_title">@string/base_delete</string>
-    <string name="dialog_delete_todo_text">Really delete?</string>
+    <string name="dialog_delete_todo_text_complete">Delete as a completed Todo?</string>
+    <string name="dialog_delete_todo_text_complete_sub">Delete as a completed Sub-Todo?</string>
+    <string name="dialog_delete_todo_text_not_complete">
+        Todo is not completed. Really delete?\n
+        (If there is Sub-Todo, it also delete)
+    </string>
 
     <string name="dialog_add_title_target_date_dummy">Click to select date</string>
 

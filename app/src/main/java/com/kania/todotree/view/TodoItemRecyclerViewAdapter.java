@@ -1,6 +1,8 @@
 package com.kania.todotree.view;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -9,9 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kania.todotree.R;
 import com.kania.todotree.data.RequestTodoData;
@@ -69,12 +71,21 @@ public class TodoItemRecyclerViewAdapter
             }
         });
 
-        holder.mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        holder.mCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.d("todo_tree", "checkbox selected, id:" + todo.getId() + ", checked:" + isChecked);
-                TodoProvider.getInstance().updateTodo(todo.getId(), isChecked);
-                setHandleButtonText(holder.mHandleTodo, todo);
+            public void onClick(View v) {
+                if (isCheckboxEnabled(todo) == false) {
+                    Toast.makeText(mContext, "not checkable.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                boolean currentCheck = todo.isCompleted();
+                boolean resultCheck = !currentCheck;
+                Log.d("todo_tree", "checkbox selected, id:" + todo.getId() + ", now checked:" + currentCheck);
+                TodoProvider.getInstance().completeTodo(todo.getId(), resultCheck);
+                holder.mCheckBox.setChecked(resultCheck);
+                holder.mHandleTodo.setVisibility(resultCheck ? View.VISIBLE : View.INVISIBLE);
+                decorateHandleButton(holder.mHandleTodo, todo);
+                notifyDataSetChanged();
             }
         });
 
@@ -82,11 +93,27 @@ public class TodoItemRecyclerViewAdapter
             @Override
             public void onClick(View v) {
                 if (todo.isCompleted()) {
-                    if (todo.isRootTodo()) {
-                        //TODO delete with option
-                    } else {
-                        //TODO delete without option
-                    }
+                    AlertDialog.Builder confirmDialogBuilder = new AlertDialog.Builder(mContext)
+                            .setTitle(R.string.dialog_delete_todo_title)
+//                            .setMessage(R.string.dialog_delete_todo_text)
+                            .setPositiveButton(R.string.dialog_edit_subject_btn_Delete, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    TodoProvider.getInstance().deleteTodo(todo.getId());
+                                }
+                            })
+                            .setNegativeButton(R.string.dialog_edit_todo_btn_cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //do nothing
+                                }
+                            });
+                    if (todo.isRootTodo())
+                        confirmDialogBuilder.setMessage(R.string.dialog_delete_todo_text_complete);
+                    else
+                        confirmDialogBuilder.setMessage(R.string.dialog_delete_todo_text_complete_sub);
+                    AlertDialog confirmDialog = confirmDialogBuilder.create();
+                    confirmDialog.show();
                 } else {
                     notifySelectEditObservers(todo.getId());
                 }
@@ -97,10 +124,14 @@ public class TodoItemRecyclerViewAdapter
             @Override
             public void onClick(View v) {
                 String name = holder.mEditSubTodoName.getText().toString();
-                if (name.trim().isEmpty())
+                //TODO textutil
+                if (name.trim().isEmpty()) {
+                    Toast.makeText(mContext, "cannot make empty name", Toast.LENGTH_SHORT).show();
                     return;
+                }
                 RequestTodoData requestTodoData = new RequestTodoData(todo.getSubject(), name, todo,
                         TodoDateUtil.getCurrent());
+                releaseCompleteBySubTodo(todo);
                 TodoProvider.getInstance().editTodo(requestTodoData);
                 holder.mEditSubTodoName.setText("");
                 select(holder);
@@ -114,11 +145,9 @@ public class TodoItemRecyclerViewAdapter
         holder.mDueDate.setText(TodoDateUtil.getFormatedDateString(mContext, todo.getDueDate()));
         holder.mUpdated.setText(TodoDateUtil
                 .getFormatedDateAndTimeString(mContext, todo.getLastUpdated()));
-        holder.mCheckBox.setChecked(todo.isCompleted());
-        ViewUtil.setCheckBoxColor(holder.mCheckBox, color, color);
+        decorateCheckbox(holder.mCheckBox, todo);
         holder.mName.setText(todo.getName());
         holder.mName.setTextColor(color);
-        setHandleButtonText(holder.mHandleTodo, todo);
         holder.mHandleTodo.setTextColor(color);
         holder.mAddSubTodo.setTextColor(color);
         ViewUtil.setIndentation(holder.mView, todo.getDepth());
@@ -129,19 +158,37 @@ public class TodoItemRecyclerViewAdapter
 
         if (TodoProvider.getInstance().getSelected() == todo.getId()) {
             holder.mMenuLayout.setVisibility(View.VISIBLE);
-            holder.mHandleTodo.setVisibility(View.VISIBLE);
         } else {
             holder.mMenuLayout.setVisibility(View.GONE);
-            holder.mHandleTodo.setVisibility(View.INVISIBLE);
         }
-
-        //holder.mDateLayout.setVisibility(View.VISIBLE);
+        decorateHandleButton(holder.mHandleTodo, todo);
     }
 
-    private void setHandleButtonText(final Button btnHandle, final TodoData todo) {
-        if (todo.isCompleted())
+    private void decorateCheckbox(final AppCompatCheckBox checkbox, final TodoData todo) {
+        int color = todo.getSubject().getColor();
+        checkbox.setChecked(todo.isCompleted());
+        ViewUtil.setCheckBoxColor(checkbox, color);
+        checkbox.setEnabled(isCheckboxEnabled(todo));
+    }
+
+    private boolean isCheckboxEnabled(final TodoData todo) {
+        boolean currentCheck = todo.isCompleted();
+        if (currentCheck && (todo.isRootTodo() == false))
+            if (todo.getParent().isCompleted())
+                return false;
+        if (currentCheck == false && todo.isCheckable() == false)
+            return false;
+        return true;
+    }
+
+    private void decorateHandleButton(final Button btnHandle, final TodoData todo) {
+        boolean isVisible = todo.isCompleted() ||
+                (TodoProvider.getInstance().getSelected() == todo.getId());
+        btnHandle.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
+        if (todo.isCompleted()) {
             if (todo.isRootTodo()) btnHandle.setText(R.string.item_menu_btn_done);
             else btnHandle.setText(R.string.item_menu_btn_delete);
+        }
         else btnHandle.setText(R.string.item_menu_btn_edit);
     }
 
@@ -171,6 +218,15 @@ public class TodoItemRecyclerViewAdapter
         }
         notifySelectObservers(mSelectedPos == NO_ITEM_SELECTED ?
                 TodoData.NON_ID : holder.mItem.getId());
+    }
+
+    private void releaseCompleteBySubTodo(final TodoData todo) {
+        TodoData target = todo;
+        while (target != null) {
+            target.setCompleted(false);
+            target = target.getParent();
+        }
+        notifyDataSetChanged();
     }
 
     public void cancelSelect() {
