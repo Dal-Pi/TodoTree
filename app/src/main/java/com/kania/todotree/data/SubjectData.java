@@ -4,15 +4,14 @@ import android.graphics.Color;
 
 import java.util.ArrayList;
 
-public class SubjectData {
-    public static final int NON_ID = -1;
-    private int mId;
+public class SubjectData implements ISubjectData {
+    private long mId;
     private String mName;
     private String mColorString;
 
     private ArrayList<ITodoData> mListeners;
 
-    public SubjectData(int id, String name, String color) {
+    public SubjectData(long id, String name, String color) {
         mId = id;
         mName = name;
         mColorString = color;
@@ -20,7 +19,8 @@ public class SubjectData {
         mListeners = new ArrayList<>();
     }
 
-    public int getId() { return mId; }
+    @Override
+    public long getId() { return mId; }
 
     public String getName() {
         return mName;

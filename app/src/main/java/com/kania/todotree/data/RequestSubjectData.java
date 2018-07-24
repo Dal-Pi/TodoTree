@@ -1,7 +1,7 @@
 package com.kania.todotree.data;
 
 public class RequestSubjectData {
-    public int id;
+    public long id;
     public String name;
     public String color;
 
@@ -10,11 +10,11 @@ public class RequestSubjectData {
         this.color = color;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public SubjectData createSubject(int newId) {
+    public SubjectData createSubject(long newId) {
         if (id == newId) {
             //TODO no not make already created subject
             return null;

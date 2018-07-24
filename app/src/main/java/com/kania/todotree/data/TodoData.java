@@ -3,18 +3,17 @@ package com.kania.todotree.data;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class TodoData implements ITodoData {
 
-    public static final int NON_ID = -1;
-    public static final int NON_DUEDATE = -1;
-    public static final int MAX_DEPTH = 10;
 
-    private int id;
-    private SubjectData subject;
+    //TODO
+    //public static final int MAX_DEPTH = 10;
+
+    private long id;
+    private long subjectId;
     private String name;
-    private TodoData parent;
+    private long parentId;
     private boolean isCompleted;
     private long dueDate;
     private long created;
@@ -22,21 +21,22 @@ public class TodoData implements ITodoData {
 
     private int depth;
 
-    private ArrayList<TodoData> children;
+    private ArrayList<Long> children;
 
-    public TodoData(int id, SubjectData subject, String name, TodoData parent,
+    public TodoData(long id, long subject, String name, long parent,
                     boolean isCompleted, long dueDate, long created, long lastUpdated) {
         this.id = id;
-        this.subject = subject;
+        this.subjectId = subject;
         this.name = name;
-        this.parent = parent;
+        this.parentId = parent;
         this.isCompleted = isCompleted;
         this.dueDate = dueDate;
         this.created = created;
         this.lastUpdated = lastUpdated;
 
         children = new ArrayList<>();
-        evaluateDepth();
+        //TODO
+        //evaluateDepth();
     }
 
     @Override
@@ -45,14 +45,17 @@ public class TodoData implements ITodoData {
     }
 
     @Override
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public SubjectData getSubject() {
-        return subject;
+    public long getSubject() {
+        return subjectId;
     }
-    public void setSubject(SubjectData subject) {
+    public void setSubject(long subject) {
+        subjectId = subject;
+        //TODO
+        /*
         this.subject.removeListener(this);
         this.subject = subject;
         this.subject.addListener(this);
@@ -61,6 +64,7 @@ public class TodoData implements ITodoData {
             TodoData child = it.next();
             child.setSubject(subject);
         }
+        */
     }
 
     public String getName() {
@@ -70,12 +74,13 @@ public class TodoData implements ITodoData {
         this.name = name;
     }
 
-    public TodoData getParent() {
-        return parent;
+    public long getParent() {
+        return parentId;
     }
-    public void setParent(TodoData parent) {
-        this.parent = parent;
-        evaluateDepth();
+    public void setParent(long parent) {
+        this.parentId = parent;
+        //TODO
+        //evaluateDepth();
     }
 
     public boolean isCompleted() {
@@ -84,6 +89,9 @@ public class TodoData implements ITodoData {
     public void setCompleted(boolean completed) {
         isCompleted = completed;
     }
+
+    //TODO
+    /*
     public boolean isCheckable() {
         boolean ret = true;
         for (TodoData child : children)
@@ -91,6 +99,7 @@ public class TodoData implements ITodoData {
                 return false;
         return ret;
     }
+    */
 
     public long getDueDate() {
         return dueDate;
@@ -113,10 +122,10 @@ public class TodoData implements ITodoData {
         this.lastUpdated = lastUpdated;
     }
 
-    public void addSubTodo(TodoData subTodo) {
+    public void addSubTodo(long subTodo) {
         children.add(subTodo);
     }
-    public void removeSubTodo(TodoData subTodo) {
+    public void removeSubTodo(long subTodo) {
         children.remove(subTodo);
     }
 
@@ -124,18 +133,20 @@ public class TodoData implements ITodoData {
         return depth;
     }
 
-    public ArrayList<TodoData> getChildren() {
+    public ArrayList<Long> getChildren() {
         return children;
     }
-    public void insertChild(TodoData child) {
-        Log.d("todo_tree", "insertChild() added child : " + child.getId());
+    public void insertChild(long child) {
+        Log.d("todo_tree", "insertChild() added child : " + child);
         children.add(child);
     }
-    public void removeChild(TodoData child) {
-        Log.d("todo_tree", "removeChild() removed child : " + child.getId());
+    public void removeChild(long child) {
+        Log.d("todo_tree", "removeChild() removed child : " + child);
         children.remove(child);
     }
 
+    //TODO
+    /*
     private void evaluateDepth() {
         int evaluated = 0;
         TodoData upperTodo = parent;
@@ -145,9 +156,12 @@ public class TodoData implements ITodoData {
         }
         this.depth = evaluated;
     }
+    */
 
-    public boolean isRootTodo() { return (parent == null);}
+    public boolean isRootTodo() { return (parentId == ISubjectData.NON_ID);}
 
+    //TODO
+    /*
     public int getChildrenCount() {
         return getChildrenCountRecur(this);
     }
@@ -159,14 +173,15 @@ public class TodoData implements ITodoData {
         }
         return evaluated;
     }
+    */
 
     @Override
     public String toString() {
         return "depth:" + depth
                 + ", id:" + id
-                + ", subject:" + subject.getId()
+                + ", subject:" + subjectId
                 + ", name:" + name
-                + ", parent:" + ((parent != null) ? parent.getId() : NON_ID)
+                + ", parent:" + parentId
                 + ", check:" + isCompleted
                 + ", due:" + dueDate
                 + ", create:" + created

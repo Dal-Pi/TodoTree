@@ -7,6 +7,8 @@
     <string name="base_cancel">Cancel</string>
     <string name="base_delete">Delete</string>
 
+    <string name="default_subject_name">Default</string>
+
     <string name="item_menu_add_sub_todo_hint">Input sub-todo title</string>
     <string name="item_menu_btn_add_sub_todo">@string/base_add</string>
     <string name="item_menu_btn_delete">@string/base_delete</string>

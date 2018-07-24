@@ -35,16 +35,16 @@ public class TodoDateUtil {
 
     /*
     public static Date getDateFromTodoDate(String todoDate) {
-        Calendar targetDate = Calendar.getInstance();
+        Calendar dueDate = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat(DATEFORMAT_DATE);
 
         try {
-            targetDate.setTime(sdf.parse(todoDate));
+            dueDate.setTime(sdf.parse(todoDate));
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        return targetDate.getTime();
+        return dueDate.getTime();
     }
     */
 

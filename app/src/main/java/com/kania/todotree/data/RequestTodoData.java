@@ -1,11 +1,11 @@
 package com.kania.todotree.data;
 
 public class RequestTodoData {
-    int id;
+    long id;
     public SubjectData subject;
     public String name;
     public TodoData parent;
-    public long targetDate;
+    public long dueDate;
     public long updatedDate;
 
     public RequestTodoData(SubjectData subject, String name, TodoData parent,
@@ -15,23 +15,23 @@ public class RequestTodoData {
         this.name = name;
         this.parent = parent;
         this.updatedDate = updatedDate;
-        targetDate = TodoData.NON_DUEDATE;
+        dueDate = TodoData.NON_DUEDATE;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
     public void setDueDate(long targetDate) {
-        this.targetDate = targetDate;
+        this.dueDate = targetDate;
     }
 
-    public TodoData createTodo(int newId) {
+    public TodoData createTodo(long newId) {
         if (id == newId) {
             //TODO no not make already created todo
             return null;
         } else {
             return new TodoData(newId, subject, name, parent,
-                    false, targetDate, updatedDate, updatedDate);
+                    false, dueDate, updatedDate, updatedDate);
         }
     }
 }

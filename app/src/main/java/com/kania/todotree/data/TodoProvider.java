@@ -7,17 +7,17 @@ import com.kania.todotree.TodoTree;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class TodoProvider {
+public class TodoProvider implements ITodoProvider {
 
     public static int NO_SELECTED = -1;
     private static TodoProvider mInstance;
 
     private ArrayList<TodoData> mRootTodoList;
     private ArrayList<TodoData> mAllTodoList;
-    private HashMap<Integer, TodoData> mTodoMap;
+    private HashMap<Long, TodoData> mTodoMap;
     private ArrayList<SubjectData> mSubjectList;
-    private HashMap<Integer, SubjectData> mSubjectMap;
-    private int mSelected = NO_SELECTED;
+    private HashMap<Long, SubjectData> mSubjectMap;
+    private long mSelected = NO_SELECTED;
 
     private ArrayList<IDataObserver> mObservers;
 
@@ -35,10 +35,16 @@ public class TodoProvider {
         mRootTodoList = new ArrayList<>();
         mAllTodoList = new ArrayList<>();
         mTodoMap = new HashMap<>();
+    }
 
-        //TODO add DB when create
-        SubjectData defaultSubject = new SubjectData(0, "defualt", "#FF555555");
-        insertSubject(defaultSubject);
+    @Override
+    public SubjectData getSubject(long id) {
+        return mSubjectMap.get(id);
+    }
+
+    @Override
+    public TodoData getTodo(long id) {
+        return mTodoMap.get(id);
     }
 
     private void insertSubject(SubjectData subject) {
@@ -52,13 +58,13 @@ public class TodoProvider {
 
     private int insertTodo(TodoData todo) {
         int pos;
-        if (todo.getParent() == null) {
+        if (todo.getParent() == ITodoData.NON_ID) {
             Log.d("todo_tree", todo.getId() + "is the root Todo");
             pos = 0;
             mRootTodoList.add(pos, todo);
             mAllTodoList.add(pos, todo);
         } else {
-            TodoData parent = mTodoMap.get(todo.getParent().getId());
+            TodoData parent = mTodoMap.get(todo.getParent());
             Log.d("todo_tree", "insertTodo() find parent:" + parent.getId());
             int childrenCount = parent.getChildrenCount();
             Log.d("todo_tree", parent.getId() + "'s children count = " + childrenCount);
@@ -91,18 +97,10 @@ public class TodoProvider {
         return mSubjectList;
     }
 
-    public TodoData getTodo(int id) {
-        return mTodoMap.get(id);
-    }
-
-    public SubjectData getSubject(int id) {
-        return mSubjectMap.get(id);
-    }
-
-    public int getSelected() {
+    public long getSelected() {
         return mSelected;
     }
-    public void select(int id) {
+    public void select(long id) {
 
         if (mTodoMap.containsKey(id)) {
             if (mSelected != id) {
@@ -133,7 +131,7 @@ public class TodoProvider {
     }
     private void addTodo(RequestTodoData requested) {
         //TODO use DB
-        int maxId  = 0;
+        long maxId  = 0;
         for (TodoData td : mAllTodoList) {
             if (td.getId() > maxId)
                 maxId = td.getId();
@@ -149,14 +147,14 @@ public class TodoProvider {
             observer.onTodoAdded(todo, pos);
         }
     }
-    public void deleteTodo(int requestTodoId) {
+    public void deleteTodo(long requestTodoId) {
         //TODO use DB
         TodoData requested = mTodoMap.get(requestTodoId);
         if (requested == null) {
             Log.e(TodoTree.TAG, "already deleted todo. id:" + requestTodoId);
         }
 
-        ArrayList<TodoData> deleteTodoList = new ArrayList<>();
+        ArrayList<Long> deleteTodoList = new ArrayList<>();
         setDeleteTodoList(deleteTodoList, requested);
         //debug
         for (TodoData todo : deleteTodoList)
@@ -179,13 +177,28 @@ public class TodoProvider {
         Log.d("todo_tree", "deleteTodo() deleted todo id:" + requestTodoId);
     }
 
-    private void setDeleteTodoList(ArrayList<TodoData> deleteTodoList, TodoData target) {
-        for (TodoData todo : target.getChildren())
-            setDeleteTodoList(deleteTodoList, todo);
-        deleteTodoList.add(target);
+    private void setDeleteTodoList(ArrayList<Long> deleteTodoList, long targetId) {
+        TodoData target = mTodoMap.get(targetId);
+        for (long todoId : target.getChildren())
+            setDeleteTodoList(deleteTodoList, todoId);
+        deleteTodoList.add(targetId);
     }
 
-    public void completeTodo(int requestTodoId, boolean completed) {
+    private int getChildrenCount(long todoId) {
+        return getChildrenCountRecur(todoId);
+    }
+    private int getChildrenCountRecur(long todoId) {
+        TodoData parentTodo = mTodoMap.get(todoId);
+        if (parentTodo == null) return 0;
+        int evaluated = parentTodo.getChildren().size();
+        Log.d("todo_tree", "getChildrenCountRecur() id:" + parentTodo.getId() + ", childrenSize:" + parentTodo.getChildren().size());
+        for (long td : parentTodo.getChildren()) {
+            evaluated += getChildrenCountRecur(td);
+        }
+        return evaluated;
+    }
+
+    public void completeTodo(long requestTodoId, boolean completed) {
         //TODO use DB
         TodoData target = mTodoMap.get(requestTodoId);
         target.setCompleted(completed);
@@ -199,13 +212,13 @@ public class TodoProvider {
         RequestTodoData prev = new RequestTodoData(requested.subject,
                 requested.name, requested.parent, requested.updatedDate);
         prev.setId(requested.id);
-        prev.setDueDate(requested.targetDate);
+        prev.setDueDate(requested.dueDate);
 
         TodoData target = mTodoMap.get(requested.id);
         target.setSubject(requested.subject);
         target.setName(requested.name);
         target.setParent(requested.parent); //TODO it can be changed?
-        target.setDueDate(requested.targetDate);
+        target.setDueDate(requested.dueDate);
         target.setLastUpdated(requested.updatedDate);
 
         int pos = mAllTodoList.indexOf(target);
@@ -216,7 +229,7 @@ public class TodoProvider {
 
     public void addSubject(RequestSubjectData requested) {
         //TODO use DB
-        int maxId  = 0;
+        long maxId  = 0;
         for (SubjectData sd : mSubjectList) {
             if (sd.getId() > maxId)
                 maxId = sd.getId();

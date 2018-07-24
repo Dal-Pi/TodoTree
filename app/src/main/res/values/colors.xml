@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#EBE5E4</color>
     <color name="colorAccent">#EBE5E4</color>
 
+    <color name="default_subject_color">#555555</color>
+
     <color name="red">#FF577B</color>
     <color name="blue">#6495ED</color>
     <color name="navy">#6A5ACD</color>
