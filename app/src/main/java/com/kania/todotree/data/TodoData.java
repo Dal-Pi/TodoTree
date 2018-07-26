@@ -6,10 +6,6 @@ import java.util.ArrayList;
 
 public class TodoData implements ITodoData {
 
-
-    //TODO
-    //public static final int MAX_DEPTH = 10;
-
     private long id;
     private long subjectId;
     private String name;
@@ -129,6 +125,9 @@ public class TodoData implements ITodoData {
         children.remove(subTodo);
     }
 
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
     public int getDepth() {
         return depth;
     }
@@ -137,11 +136,11 @@ public class TodoData implements ITodoData {
         return children;
     }
     public void insertChild(long child) {
-        Log.d("todo_tree", "insertChild() added child : " + child);
+        Log.d("todo_tree", "[TodoData] added child : " + child + " to " + this.id);
         children.add(child);
     }
     public void removeChild(long child) {
-        Log.d("todo_tree", "removeChild() removed child : " + child);
+        Log.d("todo_tree", "[TodoData] removed child : " + child + "from " + this.id);
         children.remove(child);
     }
 

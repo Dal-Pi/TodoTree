@@ -7,12 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.kania.todotree.R;
-import com.kania.todotree.data.SubjectData;
-import com.kania.todotree.data.TodoData;
 
-public class MainActivity extends AppCompatActivity
-        implements AddSubjectDialog.OnCompleteAddSubject,
-        EditTodoDialog.OnCompleteAddTodo {
+public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,19 +38,5 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onCompleteAddSubject(SubjectData completedSubject) {
-        if (completedSubject != null) {
-
-        }
-    }
-
-    @Override
-    public void onCompleteAddTodo(TodoData completedTodo) {
-        if (completedTodo != null) {
-
-        }
     }
 }

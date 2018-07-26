@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.kania.todotree.TodoTree;
 import com.kania.todotree.data.RequestTodoData;
@@ -14,33 +15,50 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 public class TodoCreateTask
-        extends AsyncTask<RequestTodoData, Integer, ArrayList<TodoData>> {
+        extends AsyncTask<Void, Integer, ArrayList<TodoData>> {
 
     private WeakReference<Context> mContextRef;
     private TodoCreateTaskListener mListener;
+    private ArrayList<RequestTodoData> mItems;
 
     public TodoCreateTask(Context context, TodoCreateTaskListener listener) {
         mContextRef = new WeakReference<>(context);
         setListener(listener);
+        mItems = new ArrayList<>();
+    }
+
+    public void setData(ArrayList<RequestTodoData> data) {
+        mItems.addAll(data);
     }
 
     @Override
-    protected ArrayList<TodoData> doInBackground(RequestTodoData... requests) {
+    protected ArrayList<TodoData> doInBackground(Void... params) {
+
+        //TODO remove
+        try {
+            Thread.currentThread();
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         ArrayList<TodoData> results = new ArrayList<>();
+        ArrayList<RequestTodoData> requests = mItems;
         TodoTreeDbHelper dbHelper = new TodoTreeDbHelper(mContextRef.get());
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         ContentValues cvTodo = new ContentValues();
-        for (int i = 0; i < requests.length; ++i) {
-            cvTodo.put(TodoTree.TodoEntry.TODO_NAME, requests[i].name);
-            cvTodo.put(TodoTree.TodoEntry.SUBJECT_ID, requests[i].subject.getId());
-            cvTodo.put(TodoTree.TodoEntry.PARENT, requests[i].parent.getId());
-            cvTodo.put(TodoTree.TodoEntry.DUEDATE, requests[i].dueDate);
-            cvTodo.put(TodoTree.TodoEntry.CREATED_DATE, requests[i].updatedDate);
-            cvTodo.put(TodoTree.TodoEntry.LAST_UPDATED_DATE, requests[i].updatedDate);
+        for (int i = 0; i < requests.size(); ++i) {
+            RequestTodoData requestTodoData = requests.get(i);
+            cvTodo.put(TodoTree.TodoEntry.TODO_NAME, requestTodoData.name);
+            cvTodo.put(TodoTree.TodoEntry.SUBJECT_ID, requestTodoData.subject);
+            cvTodo.put(TodoTree.TodoEntry.PARENT, requestTodoData.parent);
+            cvTodo.put(TodoTree.TodoEntry.DUEDATE, requestTodoData.dueDate);
+            cvTodo.put(TodoTree.TodoEntry.CREATED_DATE, requestTodoData.updatedDate);
+            cvTodo.put(TodoTree.TodoEntry.LAST_UPDATED_DATE, requestTodoData.updatedDate);
             long id = db.insert(TodoTree.TodoEntry.TABLE_NAME, null, cvTodo);
-            results.add(requests[i].createTodo(id));
+            results.add(requestTodoData.createTodo(id));
 
-            publishProgress(i + 1, requests.length);
+            publishProgress(i + 1, requests.size());
         }
         return results;
     }
@@ -55,6 +73,7 @@ public class TodoCreateTask
     @Override
     protected void onPostExecute(ArrayList<TodoData> updates) {
         super.onPostExecute(updates);
+        Log.d(TodoTree.TAG, "[TodoCreateTask] created " + updates.size() + " todos");
         if (mListener != null)
             mListener.onCreatedTodo(updates);
     }

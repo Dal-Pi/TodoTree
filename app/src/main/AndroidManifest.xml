@@ -3,6 +3,7 @@
     package="com.kania.todotree">
 
     <application
+        android:name=".TodoTreeApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

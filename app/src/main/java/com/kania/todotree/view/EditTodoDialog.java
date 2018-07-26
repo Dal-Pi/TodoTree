@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.util.Log;
@@ -34,14 +33,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link OnCompleteAddTodo} interface
- * to handle interaction events.
- * Use the {@link EditTodoDialog#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class EditTodoDialog extends DialogFragment implements TodoProvider.IDataObserver,
         View.OnClickListener,
         TodoDatePickerDialog.OnDateSetListener {
@@ -50,10 +41,9 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     private static final String ARG_SET_DUE_DATE = "setDueDate";
     private static final String ARG_EDITED_NAME = "editedNAme";
 
-
     //need to save args
-    private int mBaseTodoId;
-    private int mSelectedSubjectId;
+    private long mBaseTodoId;
+    private long mSelectedSubjectId;
     private long mSetDueDate;
     private String mEditedName;
 
@@ -69,17 +59,17 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         // Required empty public constructor
     }
 
-    public static EditTodoDialog newInstance(int baseTodoId) {
+    public static EditTodoDialog newInstance(long baseTodoId) {
         EditTodoDialog fragment = new EditTodoDialog();
         Bundle args = new Bundle();
-        args.putInt(ARG_BASE_TODO_ID, baseTodoId);
+        args.putLong(ARG_BASE_TODO_ID, baseTodoId);
         fragment.setArguments(args);
         return fragment;
     }
 
     public void saveArgs(Bundle args) {
-        args.putInt(ARG_BASE_TODO_ID, TodoData.NON_ID);
-        args.putInt(ARG_SELECTED_SUBJECT_ID, mSelectedSubjectId);
+        args.putLong(ARG_BASE_TODO_ID, TodoData.NON_ID);
+        args.putLong(ARG_SELECTED_SUBJECT_ID, mSelectedSubjectId);
         args.putString(ARG_EDITED_NAME, mEditedName);
         args.putLong(ARG_SET_DUE_DATE, mSetDueDate);
     }
@@ -87,14 +77,17 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     public void restoreSavedData(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             mBaseTodoId = TodoData.NON_ID;
-            mSelectedSubjectId = savedInstanceState.getInt(ARG_SELECTED_SUBJECT_ID);
+            mSelectedSubjectId = savedInstanceState.getLong(ARG_SELECTED_SUBJECT_ID);
             mEditedName = savedInstanceState.getString(ARG_EDITED_NAME);
             mSetDueDate = savedInstanceState.getLong(ARG_SET_DUE_DATE);
         } else {
-            mBaseTodoId = getArguments().getInt(ARG_BASE_TODO_ID);
+            if (getArguments() != null)
+                mBaseTodoId = getArguments().getLong(ARG_BASE_TODO_ID);
+            else
+                mBaseTodoId = TodoData.NON_ID;
             if (isEditDialog()) {
                 TodoData baseTodo = TodoProvider.getInstance().getTodo(mBaseTodoId);
-                mSelectedSubjectId = baseTodo.getSubject().getId();
+                mSelectedSubjectId = baseTodo.getSubject();
                 mEditedName = baseTodo.getName();
                 mSetDueDate = baseTodo.getDueDate();
             } else {
@@ -167,8 +160,6 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
             btnAddSubject.setEnabled(true);
             mSpinner.setEnabled(true);
         }
-
-
     }
 
     private void setTodoNameView(View dialogLayout) {
@@ -249,7 +240,8 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
                         .setPositiveButton(R.string.dialog_edit_subject_btn_Delete, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                TodoProvider.getInstance().deleteTodo(mBaseTodoId);
+                                //TODO
+//                                TodoProvider.getInstance().deleteTodo(mBaseTodoId);
                             }
                         })
                         .setNegativeButton(R.string.dialog_edit_todo_btn_cancel, new DialogInterface.OnClickListener() {
@@ -302,7 +294,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         //do nothing
     }
     @Override
-    public void onTodoUpdated(RequestTodoData prev, TodoData updated) {
+    public void onTodoUpdated() {
         //do nothing
     }
 
@@ -318,7 +310,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         updateSubjectList();
     }
     @Override
-    public void onSubjectUpdated(SubjectData prev, SubjectData updated) {
+    public void onSubjectUpdated() {
         updateSubjectList();
     }
 
@@ -348,17 +340,17 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
             mSubjectSpinerAdapter.notifyDataSetChanged();
     }
 
-    private void selectSubject(int id) {
+    private void selectSubject(long id) {
         if (mSpinner != null) {
             int pos = mSubjectSpinerAdapter.getPositionBySubjectId(id);
             Log.d("todo_tree", "selectSubject() pos : " + pos);
-            if (pos != SubjectData.NON_ID)
+            if (pos < mSubjectSpinerAdapter.getCount())
                 mSpinner.setSelection(pos);
         }
     }
 
     private void publishTodo() {
-        SubjectData subject = TodoProvider.getInstance().getSubject(mSelectedSubjectId);
+        //SubjectData subject = TodoProvider.getInstance().getSubject(mSelectedSubjectId);
         String todoName = mEditName.getText().toString();
         if (isValidName(todoName) == false)
             return;
@@ -366,17 +358,17 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         RequestTodoData requestTodoData;
         if (isEditDialog()) {
             TodoData baseTodo = TodoProvider.getInstance().getTodo(mBaseTodoId);
-            requestTodoData = new RequestTodoData(subject, todoName, baseTodo.getParent(),
+            requestTodoData = new RequestTodoData(mSelectedSubjectId, todoName, baseTodo.getParent(),
                     TodoDateUtil.getCurrent());
             requestTodoData.setId(baseTodo.getId());
         } else {
-            requestTodoData = new RequestTodoData(subject, todoName, null,
+            requestTodoData = new RequestTodoData(mSelectedSubjectId, todoName, TodoData.NON_ID,
                     TodoDateUtil.getCurrent());
         }
         if (mCheckDueDate.isChecked()) {
             requestTodoData.setDueDate(mSetDueDate);
         }
-        TodoProvider.getInstance().editTodo(requestTodoData);
+        TodoProvider.getInstance().editTodo(getActivity(), requestTodoData);
     }
 
     private boolean isValidName(String name) {
@@ -392,20 +384,6 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     }
     private boolean isAddDialog() {
         return mBaseTodoId == TodoData.NON_ID;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnCompleteAddTodo {
-        void onCompleteAddTodo(TodoData completedTodo);
     }
 
     class SubjectSpinerAdapter extends ArrayAdapter<SubjectData> {
@@ -435,11 +413,13 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
 
 
 
-        public int getPositionBySubjectId(int subjectId) {
-            int ret = SubjectData.NON_ID;
-            for (SubjectData sd : mItems)
-                if (sd.getId() == subjectId)
-                    ret = sd.getId();
+        public int getPositionBySubjectId(long subjectId) {
+            int ret = 0;
+            for (int i = 0; i < mItems.size(); ++i)
+                if (mItems.get(i).getId() == subjectId) {
+                    ret = i;
+                    break;
+                }
             return ret;
         }
 

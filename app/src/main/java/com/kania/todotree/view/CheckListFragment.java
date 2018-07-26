@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.kania.todotree.R;
-import com.kania.todotree.data.RequestTodoData;
 import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
@@ -104,8 +103,7 @@ public class CheckListFragment extends Fragment
         mAdapter.notifyDataSetChanged();
     }
     @Override
-    public void onTodoUpdated(RequestTodoData prev, TodoData updated) {
-        //mAdapter.notifyItemChanged(position);
+    public void onTodoUpdated() {
         mAdapter.notifyDataSetChanged();
     }
     @Override
@@ -117,23 +115,23 @@ public class CheckListFragment extends Fragment
         //TODO
     }
     @Override
-    public void onSubjectUpdated(SubjectData prev, SubjectData updated) {
-        //TODO
+    public void onSubjectUpdated() {
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onSelectTodo(int id) {
+    public void onSelectTodo(long id) {
         if (mFab != null) {
             mFab.setVisibility(id == TodoData.NON_ID ? View.VISIBLE : View.GONE);
         }
     }
 
     @Override
-    public void onSelectEditTodo(int id) {
+    public void onSelectEditTodo(long id) {
         showEditTodoDialog(id);
     }
 
-    private void showEditTodoDialog(int todoId) {
+    private void showEditTodoDialog(long todoId) {
         DialogFragment editTodoDialog = EditTodoDialog.newInstance(todoId);
         editTodoDialog.show(getActivity().getSupportFragmentManager(),
                 EditTodoDialog.class.getName());

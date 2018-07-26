@@ -2,14 +2,13 @@ package com.kania.todotree.data;
 
 public class RequestTodoData {
     long id;
-    public SubjectData subject;
+    public long subject;
     public String name;
-    public TodoData parent;
+    public long parent;
     public long dueDate;
     public long updatedDate;
 
-    public RequestTodoData(SubjectData subject, String name, TodoData parent,
-                           long updatedDate) {
+    public RequestTodoData(long subject, String name, long parent, long updatedDate) {
         id = TodoData.NON_ID;
         this.subject = subject;
         this.name = name;

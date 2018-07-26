@@ -19,7 +19,7 @@ public class TodoTree {
         public static final String SUBJECT_ID = "sub_id";
         public static final String PARENT = "parent";
         public static final String DUEDATE = "date";
-        public static final String COMPLETE = "complete"
+        public static final String COMPLETE = "complete";
         public static final String CREATED_DATE = "created_date";
         public static final String LAST_UPDATED_DATE = "last_updated";
     }

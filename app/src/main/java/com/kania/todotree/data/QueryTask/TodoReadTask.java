@@ -4,30 +4,36 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.kania.todotree.TodoTree;
-import com.kania.todotree.data.ITodoProvider;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoTreeDbHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-public class TodoReadTask
-        extends AsyncTask<Void, Void, ArrayList<TodoData>> {
+public class TodoReadTask extends AsyncTask<Void, Void, ArrayList<TodoData>> {
 
     private WeakReference<Context> mContextRef;
-    private ITodoProvider mProvider;
     private TodoReadTaskListener mListener;
 
-    public TodoReadTask(Context context, ITodoProvider provider, TodoReadTaskListener listener) {
+    public TodoReadTask(Context context, TodoReadTaskListener listener) {
         mContextRef = new WeakReference<>(context);
-        mProvider = provider;
         setListener(listener);
     }
 
     @Override
     protected ArrayList<TodoData> doInBackground(Void... params) {
+        Log.d(TodoTree.TAG, "start to loading todos");
+        //TODO remove
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Log.d(TodoTree.TAG, "end loading todos");
+
         ArrayList<TodoData> results = new ArrayList<>();
         TodoTreeDbHelper dbHelper = new TodoTreeDbHelper(mContextRef.get());
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -63,6 +69,7 @@ public class TodoReadTask
     @Override
     protected void onPostExecute(ArrayList<TodoData> results) {
         super.onPostExecute(results);
+        Log.d(TodoTree.TAG, "[TodoReadTask] read " + results.size() + " todos");
         if (mListener != null)
             mListener.onReadTodo(results);
     }
@@ -72,6 +79,6 @@ public class TodoReadTask
     }
 
     public interface TodoReadTaskListener {
-        void onReadTodo(ArrayList<TodoData> creates);
+        void onReadTodo(ArrayList<TodoData> results);
     }
 }

@@ -22,7 +22,6 @@ import android.widget.Toast;
 
 import com.kania.todotree.R;
 import com.kania.todotree.data.RequestSubjectData;
-import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoProvider;
 
 /**
@@ -35,7 +34,7 @@ import com.kania.todotree.data.TodoProvider;
  */
 public class AddSubjectDialog extends DialogFragment {
     private static final String ARG_BASE_SUBJECT_ID = "baseSubjectId";
-    private int mBaseSubjectId;
+    private long mBaseSubjectId;
     //private OnCompleteAddSubject mListener;
 
     private EditText mEditName;
@@ -46,10 +45,10 @@ public class AddSubjectDialog extends DialogFragment {
     }
 
     //TODO I did not define save args but work. define clearly
-    public static AddSubjectDialog newInstance(int baseSubjectId) {
+    public static AddSubjectDialog newInstance(long baseSubjectId) {
         AddSubjectDialog fragment = new AddSubjectDialog();
         Bundle args = new Bundle();
-        args.putInt(ARG_BASE_SUBJECT_ID, baseSubjectId);
+        args.putLong(ARG_BASE_SUBJECT_ID, baseSubjectId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -58,7 +57,7 @@ public class AddSubjectDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         if (getArguments() != null) {
-            mBaseSubjectId = getArguments().getInt(ARG_BASE_SUBJECT_ID);
+            mBaseSubjectId = getArguments().getLong(ARG_BASE_SUBJECT_ID);
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -126,23 +125,9 @@ public class AddSubjectDialog extends DialogFragment {
                     return;
                 }
                 RequestSubjectData requestData = new RequestSubjectData(name, color);
-                TodoProvider.getInstance().addSubject(requestData);
+                TodoProvider.getInstance().addSubject(getActivity(), requestData);
             }
         }
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnCompleteAddSubject {
-        void onCompleteAddSubject(SubjectData completedSubject);
     }
 
     class ColorSpinerAdapter extends ArrayAdapter<String> {

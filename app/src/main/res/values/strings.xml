@@ -17,6 +17,8 @@
     <string name="item_due_date_defualt">Due Date</string>
     <string name="item_last_update_defualt">Updated</string>
 
+    <string name="dialog_loading_title">Loading...</string>
+
     <string name="dialog_edit_todo_title_subject">Subject</string>
     <string name="dialog_edit_todo_prompt_subject">Select Subject</string>
     <string name="dialog_edit_todo_title_name">Todo Name</string>
