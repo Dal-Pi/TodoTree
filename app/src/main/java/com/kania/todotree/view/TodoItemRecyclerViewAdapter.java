@@ -82,11 +82,10 @@ public class TodoItemRecyclerViewAdapter
                 boolean resultCheck = !currentCheck;
                 Log.d("todo_tree", "checkbox selected, id:" + todo.getId() + ", now checked:" + currentCheck);
                 //TODO
-//                TodoProvider.getInstance().completeTodo(todo.getId(), resultCheck);
+                TodoProvider.getInstance().completeTodo(mContext, todo.getId(), resultCheck);
                 holder.mCheckBox.setChecked(resultCheck);
                 holder.mHandleTodo.setVisibility(resultCheck ? View.VISIBLE : View.INVISIBLE);
                 decorateHandleButton(holder.mHandleTodo, todo);
-                notifyDataSetChanged();
             }
         });
 

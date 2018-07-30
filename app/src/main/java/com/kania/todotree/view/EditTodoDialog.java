@@ -286,31 +286,33 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     }
 
     @Override
-    public void onTodoAdded(TodoData added, int position) {
+    public void onTodoAdded(ArrayList<Long> creates) {
         //do nothing
     }
     @Override
-    public void onTodoRemoved(TodoData removed) {
+    public void onTodoRemoved(ArrayList<Long> removes) {
         //do nothing
     }
     @Override
-    public void onTodoUpdated() {
+    public void onTodoUpdated(ArrayList<Long> updates) {
         //do nothing
     }
 
     @Override
-    public void onSubjectAdded(SubjectData added) {
-        Log.d("todo_tree", "onSubjectAdded() called, id : " + added.getId());
-        updateSubjectList();
-        selectSubject(added.getId());
-        mSelectedSubjectId = added.getId();
+    public void onSubjectAdded(ArrayList<Long> creates) {
+        for (long added : creates) {
+            Log.d("todo_tree", "onSubjectAdded() called, id : " + added);
+            updateSubjectList();
+            selectSubject(added);
+            mSelectedSubjectId = added;
+        }
     }
     @Override
-    public void onSubjectRemoved(SubjectData removed) {
+    public void onSubjectRemoved(ArrayList<Long> removes) {
         updateSubjectList();
     }
     @Override
-    public void onSubjectUpdated() {
+    public void onSubjectUpdated(ArrayList<Long> updates) {
         updateSubjectList();
     }
 

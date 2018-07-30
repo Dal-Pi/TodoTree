@@ -16,7 +16,7 @@ import com.kania.todotree.data.TodoTreeDbHelper;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-public class SubjectCreateTask
+public class SubjectUpdateTask
         extends AsyncTask<Void, Integer, ArrayList<SubjectData>> {
 
     private WeakReference<Context> mContextRef;
@@ -25,7 +25,7 @@ public class SubjectCreateTask
 
     private ProgressDialog mProgressDialog;
 
-    public SubjectCreateTask(Context context, SubjectCreateTaskListener listener) {
+    public SubjectUpdateTask(Context context, SubjectCreateTaskListener listener) {
         mContextRef = new WeakReference<>(context);
         setListener(listener);
         mItems = new ArrayList<>();
@@ -94,6 +94,6 @@ public class SubjectCreateTask
 
     public interface SubjectCreateTaskListener {
         void onProgressChanged(int completed, int max);
-        void onCreatedSubject(ArrayList<SubjectData> creates);
+        void onCreatedSubject(ArrayList<SubjectData> updates);
     }
 }

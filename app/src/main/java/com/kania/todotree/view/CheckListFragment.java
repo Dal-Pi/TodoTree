@@ -18,6 +18,10 @@ import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
 public class CheckListFragment extends Fragment
         implements TodoProvider.IDataObserver,
         TodoItemRecyclerViewAdapter.OnTodoItemActionListener {
@@ -67,6 +71,7 @@ public class CheckListFragment extends Fragment
         mAdapter.setHasStableIds(true);
         mAdapter.attachSelectListener(this);
         checkListView.setAdapter(mAdapter);
+        checkListView.setHasFixedSize(true);
 
         mFab = view.findViewById(R.id.frag_fab_add_todo);
         mFab.setOnClickListener(new View.OnClickListener() {
@@ -92,31 +97,55 @@ public class CheckListFragment extends Fragment
     }
 
     @Override
-    public void onTodoAdded(TodoData added, int position) {
-        Log.d("todo_tree", "onTodoAdded() id:" + added.getId() + ", pos:" + position);
-        mAdapter.notifyItemChanged(position);
+    public void onTodoAdded(ArrayList<Long> creates) {
+        TodoProvider provider = TodoProvider.getInstance();
+        for (long added : creates) {
+            TodoData todo = provider.getTodo(added);
+            TodoData parent = provider.getTodo(todo.getParent());
+            int pos = provider.getIndex(todo);
+            int parentPos = provider.getIndex(parent);
+            Log.d("todo_tree", "onTodoAdded() id:" + added + ", pos:" + pos);
+            mAdapter.notifyItemChanged(parentPos);
+            mAdapter.notifyItemInserted(pos);
+        }
     }
     @Override
-    public void onTodoRemoved(TodoData removed) {
+    public void onTodoRemoved(ArrayList<Long> removes) {
+        //TODO
         //mAdapter.notifyItemChanged(position);
         mAdapter.cancelSelect();
         mAdapter.notifyDataSetChanged();
     }
     @Override
-    public void onTodoUpdated() {
-        mAdapter.notifyDataSetChanged();
+    public void onTodoUpdated(ArrayList<Long> updates) {
+        TodoProvider provider = TodoProvider.getInstance();
+        HashSet<Long> updateSet = new HashSet<>();
+        for (long updated : updates) {
+            updateSet.add(updated);
+            TodoData todo = provider.getTodo(updated);
+            updateSet.add(todo.getParent());
+            updateSet.addAll(todo.getChildren());
+        }
+        for (long updated : updateSet) {
+            TodoData todo = provider.getTodo(updated);
+            int pos = provider.getIndex(todo);
+            Log.d("todo_tree", "onTodoUpdated() id:" + updated + ", pos:" + pos);
+            mAdapter.notifyItemChanged(pos);
+        }
     }
+
     @Override
-    public void onSubjectAdded(SubjectData added) {
+    public void onSubjectAdded(ArrayList<Long> creates) {
         //TODO
     }
     @Override
-    public void onSubjectRemoved(SubjectData removed) {
+    public void onSubjectRemoved(ArrayList<Long> removes) {
         //TODO
     }
     @Override
-    public void onSubjectUpdated() {
-        mAdapter.notifyDataSetChanged();
+    public void onSubjectUpdated(ArrayList<Long> updates) {
+        //TODO
+        //mAdapter.notifyDataSetChanged();
     }
 
     @Override

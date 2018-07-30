@@ -5,10 +5,11 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.kania.todotree.TodoTree;
-import com.kania.todotree.data.QueryTask.SubjectCreateTask;
+import com.kania.todotree.data.QueryTask.SubjectUpdateTask;
 import com.kania.todotree.data.QueryTask.SubjectReadTask;
-import com.kania.todotree.data.QueryTask.TodoCreateTask;
+import com.kania.todotree.data.QueryTask.TodoUpdateTask;
 import com.kania.todotree.data.QueryTask.TodoReadTask;
+import com.kania.todotree.view.TodoDateUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,10 +50,13 @@ public class TodoProvider implements ITodoProvider {
         SubjectReadTask subjectReadTask = new SubjectReadTask(context, new SubjectReadTask.SubjectReadTaskListener() {
             @Override
             public void onReadSubject(ArrayList<SubjectData> results) {
-                for (SubjectData subject : results)
+                ArrayList<Long> ret = new ArrayList<>();
+                for (SubjectData subject : results) {
                     insertSubject(subject);
+                    ret.add(subject.getId());
+                }
                 for (IDataObserver observer : mObservers) {
-                    observer.onSubjectUpdated();
+                    observer.onSubjectUpdated(ret);
                 }
             }
         });
@@ -61,10 +65,10 @@ public class TodoProvider implements ITodoProvider {
         TodoReadTask todoReadTask = new TodoReadTask(context, new TodoReadTask.TodoReadTaskListener() {
             @Override
             public void onReadTodo(ArrayList<TodoData> results) {
-                arrangeTodo(results);
-
+                ArrayList<Long> ret = arrangeTodo(results);
                 for (IDataObserver observer : mObservers) {
-                    observer.onTodoUpdated();
+                    //observer.onTodoUpdated(ret);
+                    observer.onTodoAdded(ret);
                 }
 
                 //debug
@@ -76,9 +80,11 @@ public class TodoProvider implements ITodoProvider {
         Log.d(TodoTree.TAG, "[loadAllData] TodoProvider data loading complete");
     }
 
-    private void arrangeTodo(ArrayList<TodoData> todos) {
+    private ArrayList<Long> arrangeTodo(ArrayList<TodoData> todos) {
+        ArrayList<Long> ret = new ArrayList<>();
         for (TodoData todo : todos)
         {
+            ret.add(todo.getId());
             if (todo.getParent() == TodoData.NON_ID)
                 mRootTodoList.add(todo);
             mTodoMap.put(todo.getId(), todo);
@@ -93,6 +99,7 @@ public class TodoProvider implements ITodoProvider {
             root.setDepth(0);
             arrangeTodoRecur(root);
         }
+        return ret;
     }
     private void arrangeTodoRecur(TodoData target) {
         mAllTodoList.add(target);
@@ -113,6 +120,10 @@ public class TodoProvider implements ITodoProvider {
         return mTodoMap.get(id);
     }
 
+    public int getIndex(TodoData todo) {
+        return mAllTodoList.indexOf(todo);
+    }
+
     private void insertSubject(SubjectData subject) {
         mSubjectList.add(subject);
         mSubjectMap.put(subject.getId(), subject);
@@ -122,7 +133,7 @@ public class TodoProvider implements ITodoProvider {
         mSubjectMap.remove(subject.getId());
     }
 
-    private int insertTodo(TodoData todo) {
+    private void insertTodo(TodoData todo) {
         mTodoMap.put(todo.getId(), todo);
         int pos;
         if (todo.getParent() == ITodoData.NON_ID) {
@@ -144,7 +155,6 @@ public class TodoProvider implements ITodoProvider {
                 Log.e("todo_tree", "[insertTodo] position over");
             }
         }
-        return pos;
     }
 
     private void evaluateDepth(TodoData todo) {
@@ -205,37 +215,111 @@ public class TodoProvider implements ITodoProvider {
     public void editTodo(Context context, RequestTodoData requested) {
         if (requested.id == TodoData.NON_ID)
             addTodo(context, requested);
-        /*
         else
             updateTodo(context, requested);
-            */
+
     }
     private void addTodo(Context context, RequestTodoData requested) {
         ArrayList<RequestTodoData> requests = new ArrayList<>();
         requests.add(requested);
 
-        TodoCreateTask createTask = new TodoCreateTask(context, new TodoCreateTask.TodoCreateTaskListener() {
+        TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoCreateTaskListener() {
             @Override
             public void onProgressChanged(int completed, int max) {
                 //TODO make progress using data
             }
             @Override
             public void onCreatedTodo(ArrayList<TodoData> creates) {
+                ArrayList<Long> ret = new ArrayList<>();
                 for (TodoData added : creates) {
-                    int pos = insertTodo(added);
-
-                    for (IDataObserver observer : mObservers) {
-                        observer.onTodoAdded(added, pos);
-                    }
-
-                    //debug
-                    //logAllTodo();
+                    ret.add(added.getId());
+                    insertTodo(added);
+                }
+                for (IDataObserver observer : mObservers) {
+                    observer.onTodoAdded(ret);
                 }
             }
+
+            @Override
+            public void onUpdatedTodo(ArrayList<RequestTodoData> updates) {
+                replaceUpdateTodos(updates);
+            }
         });
-        createTask.setData(requests);
+        createTask.setAddData(requests);
         createTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
+
+    private void updateTodo(Context context, RequestTodoData requested) {
+        ArrayList<RequestTodoData> requests = new ArrayList<>();
+        requests.add(requested);
+
+        TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoCreateTaskListener() {
+            @Override
+            public void onProgressChanged(int completed, int max) {
+                //TODO make progress using data
+            }
+            @Override
+            public void onCreatedTodo(ArrayList<TodoData> creates) {
+                //do nothing
+            }
+
+            @Override
+            public void onUpdatedTodo(ArrayList<RequestTodoData> updates) {
+                replaceUpdateTodos(updates);
+            }
+        });
+        createTask.setEditData(requests);
+        createTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
+    public void completeTodo(Context context, long requestTodoId, boolean completed) {
+        TodoData target = mTodoMap.get(requestTodoId);
+        RequestTodoData request = new RequestTodoData(target.getSubject(), target.getName(),
+                target.getParent(), TodoDateUtil.getCurrent());
+        request.setId(requestTodoId);
+        request.setDueDate(target.getDueDate());
+        //only here changed
+        request.setComplete(completed);
+        ArrayList<RequestTodoData> completes = new ArrayList<>();
+        completes.add(request);
+
+        //TODO merge
+        TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoCreateTaskListener() {
+            @Override
+            public void onProgressChanged(int completed, int max) {
+                //TODO make progress using data
+            }
+            @Override
+            public void onCreatedTodo(ArrayList<TodoData> creates) {
+                //do nothing
+            }
+
+            @Override
+            public void onUpdatedTodo(ArrayList<RequestTodoData> updates) {
+                replaceUpdateTodos(updates);
+            }
+        });
+        createTask.setEditData(completes);
+        createTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
+    private void replaceUpdateTodos(ArrayList<RequestTodoData> updates) {
+        ArrayList<Long> ret = new ArrayList<>();
+        for (RequestTodoData updated : updates) {
+            ret.add(updated.id);
+            TodoData old = mTodoMap.get(updated.id);
+            old.setName(updated.name);
+            old.setSubject(updated.subject);
+            //TODO parent can change?
+            old.setCompleted(updated.complete);
+            old.setDueDate(updated.dueDate);
+            old.setLastUpdated(updated.updatedDate);
+        }
+        for (IDataObserver observer : mObservers) {
+            observer.onTodoUpdated(ret);
+        }
+    }
+
     /*
     public void deleteTodo(Context context, long requestTodoId) {
         //TODO use DB
@@ -295,64 +379,30 @@ public class TodoProvider implements ITodoProvider {
                 return false;
         return ret;
     }
-    /*
-    public void completeTodo(long requestTodoId, boolean completed) {
-        //TODO use DB
-        TodoData target = mTodoMap.get(requestTodoId);
-        target.setCompleted(completed);
-
-//        for (IDataObserver observer : mObservers) {
-//            observer.onTodoUpdated(prev, target);
-//        }
-    }
-    */
-    /*
-    private void updateTodo(Context context, RequestTodoData requested) {
-        //TODO use DB
-        RequestTodoData prev = new RequestTodoData(requested.subject,
-                requested.name, requested.parent, requested.updatedDate);
-        prev.setId(requested.id);
-        prev.setDueDate(requested.dueDate);
-
-        TodoData target = mTodoMap.get(requested.id);
-        target.setSubject(requested.subject);
-        target.setName(requested.name);
-        target.setParent(requested.parent); //TODO it can be changed?
-        target.setDueDate(requested.dueDate);
-        target.setLastUpdated(requested.updatedDate);
-
-        int pos = mAllTodoList.indexOf(target);
-        for (IDataObserver observer : mObservers) {
-            observer.onTodoUpdated(prev, target);
-        }
-    }
-    */
 
     public void addSubject(Context context, RequestSubjectData requested) {
         ArrayList<RequestSubjectData> requests = new ArrayList<>();
         requests.add(requested);
 
-        SubjectCreateTask createTask = new SubjectCreateTask(context, new SubjectCreateTask.SubjectCreateTaskListener() {
+        SubjectUpdateTask createTask = new SubjectUpdateTask(context, new SubjectUpdateTask.SubjectCreateTaskListener() {
             @Override
             public void onProgressChanged(int completed, int max) {
                 //TODO make progress using data
             }
             @Override
-            public void onCreatedSubject(ArrayList<SubjectData> creates) {
-                for (SubjectData added : creates) {
+            public void onCreatedSubject(ArrayList<SubjectData> updates) {
+                ArrayList<Long> ret = new ArrayList<>();
+                for (SubjectData added : updates) {
                     insertSubject(added);
-
-                    for (IDataObserver observer : mObservers) {
-                        observer.onSubjectAdded(added);
-                    }
+                    ret.add(added.getId());
+                }
+                for (IDataObserver observer : mObservers) {
+                    observer.onSubjectAdded(ret);
                 }
             }
         });
         createTask.setData(requests);
         createTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-
-        for (IDataObserver observer : mObservers)
-            observer.onSubjectUpdated();
     }
     public void deleteSubject(SubjectData requested) {
         //TODO use DB
@@ -391,12 +441,14 @@ public class TodoProvider implements ITodoProvider {
     }
 
     public interface IDataObserver {
-        void onTodoAdded(TodoData added, int position);
-        void onTodoRemoved(TodoData removed);
-        void onTodoUpdated();
+        void onTodoAdded(ArrayList<Long> creates);
+        void onTodoRemoved(ArrayList<Long> removes);
+        //TODO send request datas
+        void onTodoUpdated(ArrayList<Long> updates);
 
-        void onSubjectAdded(SubjectData added);
-        void onSubjectRemoved(SubjectData removed);
-        void onSubjectUpdated();
+        void onSubjectAdded(ArrayList<Long> creates);
+        void onSubjectRemoved(ArrayList<Long> removes);
+        //TODO send request datas
+        void onSubjectUpdated(ArrayList<Long> updates);
     }
 }

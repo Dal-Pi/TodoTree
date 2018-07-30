@@ -1,12 +1,13 @@
 package com.kania.todotree.data;
 
 public class RequestTodoData {
-    long id;
+    public long id;
     public long subject;
     public String name;
     public long parent;
     public long dueDate;
     public long updatedDate;
+    public boolean complete;
 
     public RequestTodoData(long subject, String name, long parent, long updatedDate) {
         id = TodoData.NON_ID;
@@ -15,6 +16,7 @@ public class RequestTodoData {
         this.parent = parent;
         this.updatedDate = updatedDate;
         dueDate = TodoData.NON_DUEDATE;
+        complete = false;
     }
 
     public void setId(long id) {
@@ -22,6 +24,9 @@ public class RequestTodoData {
     }
     public void setDueDate(long targetDate) {
         this.dueDate = targetDate;
+    }
+    public void setComplete(boolean complete) {
+        this.complete = complete;
     }
 
     public TodoData createTodo(long newId) {
