@@ -68,6 +68,7 @@ public class SubjectUpdateTask
 
             publishProgress(i + 1, requests.size());
         }
+        db.close();
         return results;
     }
 

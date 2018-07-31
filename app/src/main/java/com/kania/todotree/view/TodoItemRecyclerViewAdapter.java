@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kania.todotree.R;
+import com.kania.todotree.TodoTree;
 import com.kania.todotree.data.RequestTodoData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
@@ -80,10 +81,15 @@ public class TodoItemRecyclerViewAdapter
                 }
                 boolean currentCheck = todo.isCompleted();
                 boolean resultCheck = !currentCheck;
-                Log.d("todo_tree", "checkbox selected, id:" + todo.getId() + ", now checked:" + currentCheck);
+                Log.d(TodoTree.TAG, "checkbox selected, id:" + todo.getId() + ", now checked:" + currentCheck);
                 //TODO
                 TodoProvider.getInstance().completeTodo(mContext, todo.getId(), resultCheck);
-                holder.mCheckBox.setChecked(resultCheck);
+                if (holder.mCheckBox.isChecked() != resultCheck) {
+                    //TODO remove log
+                    Log.d(TodoTree.TAG, "(debug) checkbox missmatch update, target:" + resultCheck);
+                    holder.mCheckBox.setChecked(resultCheck);
+                }
+
                 holder.mHandleTodo.setVisibility(resultCheck ? View.VISIBLE : View.INVISIBLE);
                 decorateHandleButton(holder.mHandleTodo, todo);
             }
@@ -99,8 +105,7 @@ public class TodoItemRecyclerViewAdapter
                             .setPositiveButton(R.string.dialog_edit_subject_btn_Delete, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    //TODO
-//                                    TodoProvider.getInstance().deleteTodo(todo.getId());
+                                    TodoProvider.getInstance().deleteTodo(mContext, todo.getId());
                                 }
                             })
                             .setNegativeButton(R.string.dialog_edit_todo_btn_cancel, new DialogInterface.OnClickListener() {

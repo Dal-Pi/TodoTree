@@ -7,12 +7,14 @@ import android.util.Log;
 import com.kania.todotree.TodoTree;
 import com.kania.todotree.data.QueryTask.SubjectUpdateTask;
 import com.kania.todotree.data.QueryTask.SubjectReadTask;
+import com.kania.todotree.data.QueryTask.TodoDeleteTask;
 import com.kania.todotree.data.QueryTask.TodoUpdateTask;
 import com.kania.todotree.data.QueryTask.TodoReadTask;
 import com.kania.todotree.view.TodoDateUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class TodoProvider implements ITodoProvider {
 
@@ -168,7 +170,12 @@ public class TodoProvider implements ITodoProvider {
         todo.setDepth(evaluated);
     }
 
+    //TODO change as ID
     private int removeTodo(TodoData todo) {
+        if (todo.isRootTodo() == false) {
+            TodoData parent = mTodoMap.get(todo.getParent());
+            parent.removeChild(todo.getId());
+        }
         if (todo.isRootTodo()) {
             mRootTodoList.remove(todo);
         }
@@ -223,7 +230,7 @@ public class TodoProvider implements ITodoProvider {
         ArrayList<RequestTodoData> requests = new ArrayList<>();
         requests.add(requested);
 
-        TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoCreateTaskListener() {
+        TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoUpdateTaskListener() {
             @Override
             public void onProgressChanged(int completed, int max) {
                 //TODO make progress using data
@@ -253,7 +260,7 @@ public class TodoProvider implements ITodoProvider {
         ArrayList<RequestTodoData> requests = new ArrayList<>();
         requests.add(requested);
 
-        TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoCreateTaskListener() {
+        TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoUpdateTaskListener() {
             @Override
             public void onProgressChanged(int completed, int max) {
                 //TODO make progress using data
@@ -284,7 +291,7 @@ public class TodoProvider implements ITodoProvider {
         completes.add(request);
 
         //TODO merge
-        TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoCreateTaskListener() {
+        TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoUpdateTaskListener() {
             @Override
             public void onProgressChanged(int completed, int max) {
                 //TODO make progress using data
@@ -320,37 +327,43 @@ public class TodoProvider implements ITodoProvider {
         }
     }
 
-    /*
     public void deleteTodo(Context context, long requestTodoId) {
-        //TODO use DB
         TodoData requested = mTodoMap.get(requestTodoId);
         if (requested == null) {
             Log.e(TodoTree.TAG, "already deleted todo. id:" + requestTodoId);
         }
-
         ArrayList<Long> deleteTodoList = new ArrayList<>();
-        setDeleteTodoList(deleteTodoList, requested);
-        //debug
-        for (TodoData todo : deleteTodoList)
-            Log.d(TodoTree.TAG, "deletelist : " + todo.toString());
+        setDeleteTodoList(deleteTodoList, requestTodoId);
 
-        for (TodoData todo : deleteTodoList) {
-            //TODO use DB
-            //delete DB
+        TodoDeleteTask todoDeleteTask = new TodoDeleteTask(context, new TodoDeleteTask.TodoDeleteTaskListener() {
+            @Override
+            public void onProgressChanged(int completed, int max) {
+                //TODO make progress using data
+            }
 
-            //delete on list
-            //disconnect from parent
-            if (todo.isRootTodo() == false)
-                todo.getParent().removeChild(todo);
-            removeTodo(todo);
-        }
-
-        for (IDataObserver observer : mObservers) {
-            observer.onTodoRemoved(requested);
-        }
-        Log.d("todo_tree", "deleteTodo() deleted todo id:" + requestTodoId);
+            @Override
+            public void onDeletedTodo(ArrayList<Long> deletes) {
+                ArrayList<Integer> deletePositions = new ArrayList<>();
+                HashSet<Long> updateCandidate = new HashSet<>();
+                for (long deleted : deletes) {
+                    Log.d(TodoTree.TAG, "[deleteTodo] deleted id:" + deleted);
+                    TodoData todo = mTodoMap.get(deleted);
+                    deletePositions.add(mAllTodoList.indexOf(todo));
+                    if (todo.getParent() != TodoData.NON_ID)
+                        updateCandidate.add(todo.getParent());
+                    removeTodo(todo);
+                }
+                for (long deleted : deletes) {
+                    updateCandidate.remove(deleted);
+                }
+                for (IDataObserver observer : mObservers) {
+                    observer.onTodoRemoved(deletePositions, updateCandidate);
+                }
+            }
+        });
+        todoDeleteTask.setDeleteData(deleteTodoList);
+        todoDeleteTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
-    */
 
     private void setDeleteTodoList(ArrayList<Long> deleteTodoList, long targetId) {
         TodoData target = mTodoMap.get(targetId);
@@ -442,7 +455,7 @@ public class TodoProvider implements ITodoProvider {
 
     public interface IDataObserver {
         void onTodoAdded(ArrayList<Long> creates);
-        void onTodoRemoved(ArrayList<Long> removes);
+        void onTodoRemoved(ArrayList<Integer> removePositions, HashSet<Long> parents);
         //TODO send request datas
         void onTodoUpdated(ArrayList<Long> updates);
 

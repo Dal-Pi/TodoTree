@@ -118,7 +118,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/text_margin"
                     android:layout_marginEnd="@dimen/text_margin"
-                    android:layout_alignParentStart="true"
+                    android:layout_toLeftOf="@id/item_btn_add_sub_todo"
                     android:layout_centerVertical="true"
                     android:text="selected"/>
             </RelativeLayout>

@@ -31,6 +31,7 @@ import com.kania.todotree.data.TodoProvider;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 public class EditTodoDialog extends DialogFragment implements TodoProvider.IDataObserver,
@@ -231,6 +232,8 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         if (isAddDialog())
             return;
         int neutralStringId = R.string.dialog_edit_subject_btn_Delete;
+        //TODO problem
+        /*
         builder.setNeutralButton(neutralStringId, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -240,8 +243,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
                         .setPositiveButton(R.string.dialog_edit_subject_btn_Delete, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //TODO
-//                                TodoProvider.getInstance().deleteTodo(mBaseTodoId);
+                                TodoProvider.getInstance().deleteTodo(getActivity(), mBaseTodoId);
                             }
                         })
                         .setNegativeButton(R.string.dialog_edit_todo_btn_cancel, new DialogInterface.OnClickListener() {
@@ -254,6 +256,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
                 confirmDialog.show();
             }
         });
+        */
     }
 
     @Override
@@ -290,7 +293,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         //do nothing
     }
     @Override
-    public void onTodoRemoved(ArrayList<Long> removes) {
+    public void onTodoRemoved(ArrayList<Integer> removePositions, HashSet<Long> parents) {
         //do nothing
     }
     @Override

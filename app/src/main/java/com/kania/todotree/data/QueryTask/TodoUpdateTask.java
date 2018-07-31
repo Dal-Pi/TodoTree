@@ -18,11 +18,11 @@ public class TodoUpdateTask
         extends AsyncTask<Void, Integer, ArrayList<TodoData>> {
 
     private WeakReference<Context> mContextRef;
-    private TodoCreateTaskListener mListener;
+    private TodoUpdateTaskListener mListener;
     private ArrayList<RequestTodoData> mAddItems;
     private ArrayList<RequestTodoData> mEditItems;
 
-    public TodoUpdateTask(Context context, TodoCreateTaskListener listener) {
+    public TodoUpdateTask(Context context, TodoUpdateTaskListener listener) {
         mContextRef = new WeakReference<>(context);
         setListener(listener);
         mAddItems = new ArrayList<>();
@@ -87,7 +87,7 @@ public class TodoUpdateTask
 
             publishProgress(i + 1, mAddItems.size());
         }
-
+        db.close();
         return results;
     }
 
@@ -108,11 +108,11 @@ public class TodoUpdateTask
         }
     }
 
-    public void setListener(TodoCreateTaskListener listener) {
+    public void setListener(TodoUpdateTaskListener listener) {
         mListener = listener;
     }
 
-    public interface TodoCreateTaskListener {
+    public interface TodoUpdateTaskListener {
         void onProgressChanged(int completed, int max);
         void onCreatedTodo(ArrayList<TodoData> creates);
         void onUpdatedTodo(ArrayList<RequestTodoData> updates);

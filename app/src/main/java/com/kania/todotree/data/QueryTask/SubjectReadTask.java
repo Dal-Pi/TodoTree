@@ -59,6 +59,7 @@ public class SubjectReadTask extends AsyncTask<Void, Void, ArrayList<SubjectData
             SubjectData subject = new SubjectData(id, name, color);
             results.add(subject);
         }
+        db.close();
         return results;
     }
 

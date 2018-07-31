@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.kania.todotree.R;
+import com.kania.todotree.TodoTree;
 import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
@@ -110,11 +111,17 @@ public class CheckListFragment extends Fragment
         }
     }
     @Override
-    public void onTodoRemoved(ArrayList<Long> removes) {
-        //TODO
-        //mAdapter.notifyItemChanged(position);
-        mAdapter.cancelSelect();
-        mAdapter.notifyDataSetChanged();
+    public void onTodoRemoved(ArrayList<Integer> removePositions, HashSet<Long> parents) {
+        TodoProvider provider = TodoProvider.getInstance();
+        for (int removePos : removePositions) {
+            mAdapter.notifyItemRemoved(removePos);
+            Log.d(TodoTree.TAG, "onTodoRemoved(), pos:" + removePos);
+        }
+        for (long parent : parents) {
+            TodoData todo = provider.getTodo(parent);
+            int pos = provider.getIndex(todo);
+            mAdapter.notifyItemChanged(pos);
+        }
     }
     @Override
     public void onTodoUpdated(ArrayList<Long> updates) {

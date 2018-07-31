@@ -63,6 +63,7 @@ public class TodoReadTask extends AsyncTask<Void, Void, ArrayList<TodoData>> {
             TodoData todo = new TodoData(id, subject, name, parent, complete, duedate, created, updated);
             results.add(todo);
         }
+        db.close();
         return results;
     }
 
