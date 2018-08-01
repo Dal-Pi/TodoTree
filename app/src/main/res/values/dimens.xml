@@ -1,6 +1,7 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="select_layout_start_margin">32dp</dimen>
 
     <dimen name="todo_list_margin">20dp</dimen>
     <dimen name="todo_item_margin_padding">7dp</dimen>

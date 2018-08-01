@@ -328,6 +328,10 @@ public class TodoProvider implements ITodoProvider {
     }
 
     public void deleteTodo(Context context, long requestTodoId) {
+        //debug
+        if (context == null)
+            Log.e(TodoTree.TAG, "[deleteTodo] context is null!");
+
         TodoData requested = mTodoMap.get(requestTodoId);
         if (requested == null) {
             Log.e(TodoTree.TAG, "already deleted todo. id:" + requestTodoId);

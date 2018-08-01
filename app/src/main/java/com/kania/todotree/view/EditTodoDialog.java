@@ -233,17 +233,17 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
             return;
         int neutralStringId = R.string.dialog_edit_subject_btn_Delete;
         //TODO problem
-        /*
         builder.setNeutralButton(neutralStringId, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                final Context context = getActivity();
                 AlertDialog.Builder confirmDialogBuilder = new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.dialog_delete_todo_title)
                         .setMessage(R.string.dialog_delete_todo_text_not_complete)
                         .setPositiveButton(R.string.dialog_edit_subject_btn_Delete, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                TodoProvider.getInstance().deleteTodo(getActivity(), mBaseTodoId);
+                                TodoProvider.getInstance().deleteTodo(context, mBaseTodoId);
                             }
                         })
                         .setNegativeButton(R.string.dialog_edit_todo_btn_cancel, new DialogInterface.OnClickListener() {
@@ -256,7 +256,6 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
                 confirmDialog.show();
             }
         });
-        */
     }
 
     @Override
