@@ -68,7 +68,7 @@ public class TodoUpdateTask
             String selectionUpdateTodo =
                     TodoTree.TodoEntry._ID + " LIKE " + requestTodoData.id;
             //TODO error check
-            long id = db.update(TodoTree.TodoEntry.TABLE_NAME, cvTodo, selectionUpdateTodo, null);
+            db.update(TodoTree.TodoEntry.TABLE_NAME, cvTodo, selectionUpdateTodo, null);
 
             publishProgress(i + 1, mEditItems.size());
         }
@@ -83,7 +83,8 @@ public class TodoUpdateTask
             cvTodo.put(TodoTree.TodoEntry.CREATED_DATE, requestTodoData.updatedDate);
             cvTodo.put(TodoTree.TodoEntry.LAST_UPDATED_DATE, requestTodoData.updatedDate);
             long id = db.insert(TodoTree.TodoEntry.TABLE_NAME, null, cvTodo);
-            results.add(requestTodoData.createTodo(id));
+            if (id != TodoData.NON_ID)
+                results.add(requestTodoData.createTodo(id));
 
             publishProgress(i + 1, mAddItems.size());
         }
@@ -101,8 +102,11 @@ public class TodoUpdateTask
     @Override
     protected void onPostExecute(ArrayList<TodoData> creates) {
         super.onPostExecute(creates);
-        Log.d(TodoTree.TAG, "[TodoCreateTask] created " + creates.size() + " todos");
+        Log.d(TodoTree.TAG, "[TodoCreateTask::onPostExecute] created " + creates.size() + ", updated " + mEditItems.size() + " todos");
         if (mListener != null) {
+            //debug
+            for (RequestTodoData requested : mEditItems)
+                Log.d(TodoTree.TAG, "[TodoCreateTask::onPostExecute] updated id " + requested.id);
             mListener.onUpdatedTodo(mEditItems);
             mListener.onCreatedTodo(creates);
         }

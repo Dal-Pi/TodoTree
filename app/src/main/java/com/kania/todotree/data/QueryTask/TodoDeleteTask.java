@@ -1,6 +1,5 @@
 package com.kania.todotree.data.QueryTask;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;

@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 
 import com.kania.todotree.R;
 import com.kania.todotree.TodoTree;
+import com.kania.todotree.data.RequestTodoData;
 import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
@@ -98,16 +99,18 @@ public class CheckListFragment extends Fragment
     }
 
     @Override
-    public void onTodoAdded(ArrayList<Long> creates) {
+    public void onTodoAdded(ArrayList<TodoData> creates) {
         TodoProvider provider = TodoProvider.getInstance();
-        for (long added : creates) {
-            TodoData todo = provider.getTodo(added);
-            TodoData parent = provider.getTodo(todo.getParent());
-            int pos = provider.getIndex(todo);
-            int parentPos = provider.getIndex(parent);
-            Log.d("todo_tree", "onTodoAdded() id:" + added + ", pos:" + pos);
-            mAdapter.notifyItemChanged(parentPos);
-            mAdapter.notifyItemInserted(pos);
+        for (TodoData added : creates) {
+            if (added.isRootTodo() == false) {
+                TodoData parent = provider.getTodo(added.getParent());
+                int parentPos = provider.getIndex(parent);
+                mAdapter.notifyItemChanged(parentPos);
+            }
+            int pos = provider.getIndex(added);
+            Log.d(TodoTree.TAG, "[CheckListFragment::onTodoAdded] id:" + added + ", pos:" + pos);
+            if (pos >= 0)
+                mAdapter.notifyItemInserted(pos);
         }
     }
     @Override
@@ -124,19 +127,19 @@ public class CheckListFragment extends Fragment
         }
     }
     @Override
-    public void onTodoUpdated(ArrayList<Long> updates) {
+    public void onTodoUpdated(ArrayList<RequestTodoData> origins, ArrayList<TodoData> updates) {
         TodoProvider provider = TodoProvider.getInstance();
         HashSet<Long> updateSet = new HashSet<>();
-        for (long updated : updates) {
-            updateSet.add(updated);
-            TodoData todo = provider.getTodo(updated);
-            updateSet.add(todo.getParent());
-            updateSet.addAll(todo.getChildren());
+        for (TodoData updated : updates) {
+            updateSet.add(updated.getId());
+            if (updated.isRootTodo() == false)
+                updateSet.add(updated.getParent());
+            updateSet.addAll(updated.getChildren());
         }
         for (long updated : updateSet) {
             TodoData todo = provider.getTodo(updated);
             int pos = provider.getIndex(todo);
-            Log.d("todo_tree", "onTodoUpdated() id:" + updated + ", pos:" + pos);
+            Log.d(TodoTree.TAG, "[CheckListFragment::onTodoUpdated] id:" + updated + ", pos:" + pos);
             mAdapter.notifyItemChanged(pos);
         }
     }

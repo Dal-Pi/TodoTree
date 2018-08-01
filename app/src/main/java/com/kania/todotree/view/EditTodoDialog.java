@@ -288,7 +288,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     }
 
     @Override
-    public void onTodoAdded(ArrayList<Long> creates) {
+    public void onTodoAdded(ArrayList<TodoData> creates) {
         //do nothing
     }
     @Override
@@ -296,7 +296,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         //do nothing
     }
     @Override
-    public void onTodoUpdated(ArrayList<Long> updates) {
+    public void onTodoUpdated(ArrayList<RequestTodoData> origins, ArrayList<TodoData> updates) {
         //do nothing
     }
 

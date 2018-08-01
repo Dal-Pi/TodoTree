@@ -67,14 +67,13 @@ public class TodoProvider implements ITodoProvider {
         TodoReadTask todoReadTask = new TodoReadTask(context, new TodoReadTask.TodoReadTaskListener() {
             @Override
             public void onReadTodo(ArrayList<TodoData> results) {
-                ArrayList<Long> ret = arrangeTodo(results);
+                ArrayList<TodoData> ret = arrangeTodo(results);
                 for (IDataObserver observer : mObservers) {
-                    //observer.onTodoUpdated(ret);
                     observer.onTodoAdded(ret);
                 }
 
-                //debug
-                logAllTodo();
+                //TODO debug
+                //logAllTodo();
             }
         });
         todoReadTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -82,19 +81,19 @@ public class TodoProvider implements ITodoProvider {
         Log.d(TodoTree.TAG, "[loadAllData] TodoProvider data loading complete");
     }
 
-    private ArrayList<Long> arrangeTodo(ArrayList<TodoData> todos) {
-        ArrayList<Long> ret = new ArrayList<>();
+    private ArrayList<TodoData> arrangeTodo(ArrayList<TodoData> todos) {
+        ArrayList<TodoData> ret = new ArrayList<>();
         for (TodoData todo : todos)
         {
-            ret.add(todo.getId());
-            if (todo.getParent() == TodoData.NON_ID)
+            ret.add(todo);
+            if (todo.isRootTodo())
                 mRootTodoList.add(todo);
             mTodoMap.put(todo.getId(), todo);
         }
         for (long todoId : mTodoMap.keySet())
         {
             TodoData todo = mTodoMap.get(todoId);
-            if (todo.getParent() != TodoData.NON_ID)
+            if (todo.isRootTodo() == false)
                 mTodoMap.get(todo.getParent()).insertChild(todoId);
         }
         for (TodoData root : mRootTodoList) {
@@ -193,6 +192,7 @@ public class TodoProvider implements ITodoProvider {
         return mSubjectList;
     }
 
+    //TODO select는 view 종속적이므로 없어져야함
     public long getSelected() {
         return mSelected;
     }
@@ -237,14 +237,7 @@ public class TodoProvider implements ITodoProvider {
             }
             @Override
             public void onCreatedTodo(ArrayList<TodoData> creates) {
-                ArrayList<Long> ret = new ArrayList<>();
-                for (TodoData added : creates) {
-                    ret.add(added.getId());
-                    insertTodo(added);
-                }
-                for (IDataObserver observer : mObservers) {
-                    observer.onTodoAdded(ret);
-                }
+                handleAddResult(creates);
             }
 
             @Override
@@ -256,9 +249,46 @@ public class TodoProvider implements ITodoProvider {
         createTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
+    private void handleAddResult(ArrayList<TodoData> creates) {
+        ArrayList<TodoData> ret = new ArrayList<>();
+        for (TodoData added : creates) {
+            ret.add(added);
+            insertTodo(added);
+        }
+        for (IDataObserver observer : mObservers) {
+            observer.onTodoAdded(ret);
+        }
+    }
+
     private void updateTodo(Context context, RequestTodoData requested) {
         ArrayList<RequestTodoData> requests = new ArrayList<>();
-        requests.add(requested);
+        TodoData target = mTodoMap.get(requested.id);
+        //TODO refector!
+        if (target.isRootTodo() && (target.getSubject() != requested.subject)) {
+            ArrayList<Long> allChildList = new ArrayList<>();
+            setAllChildTodoList(allChildList, requested.id);
+            for (Long childId : allChildList) {
+                TodoData child = mTodoMap.get(childId);
+                RequestTodoData childRequest;
+                if (child.isRootTodo()) {
+                    childRequest = new RequestTodoData(requested.subject, requested.name, requested.parent, requested.updatedDate);
+                    childRequest.setDueDate(requested.dueDate);
+                    childRequest.setComplete(requested.complete);
+                    childRequest.setId(requested.id);
+                } else {
+                    childRequest = new RequestTodoData(requested.subject, child.getName(), child.getParent(), child.getLastUpdated());
+                    childRequest.setDueDate(child.getDueDate());
+                    childRequest.setComplete(child.isCompleted());
+                    childRequest.setId(child.getId());
+                }
+                childRequest.setDueDate(child.getDueDate());
+                childRequest.setComplete(child.isCompleted());
+                childRequest.setId(child.getId());
+                requests.add(childRequest);
+            }
+        } else {
+            requests.add(requested);
+        }
 
         TodoUpdateTask createTask = new TodoUpdateTask(context, new TodoUpdateTask.TodoUpdateTaskListener() {
             @Override
@@ -272,7 +302,7 @@ public class TodoProvider implements ITodoProvider {
 
             @Override
             public void onUpdatedTodo(ArrayList<RequestTodoData> updates) {
-                replaceUpdateTodos(updates);
+                handleUpdateTodo(updates);
             }
         });
         createTask.setEditData(requests);
@@ -303,17 +333,41 @@ public class TodoProvider implements ITodoProvider {
 
             @Override
             public void onUpdatedTodo(ArrayList<RequestTodoData> updates) {
-                replaceUpdateTodos(updates);
+                handleUpdateTodo(updates);
             }
         });
         createTask.setEditData(completes);
         createTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
-    private void replaceUpdateTodos(ArrayList<RequestTodoData> updates) {
-        ArrayList<Long> ret = new ArrayList<>();
+    private void handleUpdateTodo(ArrayList<RequestTodoData> updates) {
+        ArrayList<RequestTodoData> origins = new ArrayList<>();
+        ArrayList<TodoData> updatedTodos;
+        //debug
+        for (RequestTodoData requested : updates) {
+            Log.d(TodoTree.TAG, "[TodoProvider::handleUpdateTodo] requested id " + requested.id);
+        }
+        for (RequestTodoData requested : updates) {
+            TodoData origin = mTodoMap.get(requested.id);
+            //debug
+            Log.d(TodoTree.TAG, "[TodoProvider::handleUpdateTodo] origin : " + origin.toString());
+            RequestTodoData originData = new RequestTodoData(origin.getSubject(), origin.getName(), origin.getParent(), origin.getDueDate());
+            originData.setDueDate(origin.getDueDate());
+            originData.setComplete(origin.isCompleted());
+            originData.setId(origin.getId());
+            origins.add(originData);
+        }
+
+        updatedTodos = replaceUpdateTodos(updates);
+
+        for (IDataObserver observer : mObservers) {
+            observer.onTodoUpdated(origins, updatedTodos);
+        }
+    }
+
+    private ArrayList<TodoData> replaceUpdateTodos(ArrayList<RequestTodoData> updates) {
+        ArrayList<TodoData> ret = new ArrayList<>();
         for (RequestTodoData updated : updates) {
-            ret.add(updated.id);
             TodoData old = mTodoMap.get(updated.id);
             old.setName(updated.name);
             old.setSubject(updated.subject);
@@ -321,23 +375,18 @@ public class TodoProvider implements ITodoProvider {
             old.setCompleted(updated.complete);
             old.setDueDate(updated.dueDate);
             old.setLastUpdated(updated.updatedDate);
+            ret.add(old);
         }
-        for (IDataObserver observer : mObservers) {
-            observer.onTodoUpdated(ret);
-        }
+        return ret;
     }
 
     public void deleteTodo(Context context, long requestTodoId) {
-        //debug
-        if (context == null)
-            Log.e(TodoTree.TAG, "[deleteTodo] context is null!");
-
         TodoData requested = mTodoMap.get(requestTodoId);
         if (requested == null) {
-            Log.e(TodoTree.TAG, "already deleted todo. id:" + requestTodoId);
+            Log.e(TodoTree.TAG, "[TodoProvider::deleteTodo] already deleted todo. id:" + requestTodoId);
         }
         ArrayList<Long> deleteTodoList = new ArrayList<>();
-        setDeleteTodoList(deleteTodoList, requestTodoId);
+        setAllChildTodoList(deleteTodoList, requestTodoId);
 
         TodoDeleteTask todoDeleteTask = new TodoDeleteTask(context, new TodoDeleteTask.TodoDeleteTaskListener() {
             @Override
@@ -369,10 +418,10 @@ public class TodoProvider implements ITodoProvider {
         todoDeleteTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
-    private void setDeleteTodoList(ArrayList<Long> deleteTodoList, long targetId) {
+    private void setAllChildTodoList(ArrayList<Long> deleteTodoList, long targetId) {
         TodoData target = mTodoMap.get(targetId);
         for (long todoId : target.getChildren())
-            setDeleteTodoList(deleteTodoList, todoId);
+            setAllChildTodoList(deleteTodoList, todoId);
         deleteTodoList.add(targetId);
     }
 
@@ -458,10 +507,10 @@ public class TodoProvider implements ITodoProvider {
     }
 
     public interface IDataObserver {
-        void onTodoAdded(ArrayList<Long> creates);
+        void onTodoAdded(ArrayList<TodoData> creates);
+        void onTodoUpdated(ArrayList<RequestTodoData> origins, ArrayList<TodoData> updates);
+        //TODO refector!
         void onTodoRemoved(ArrayList<Integer> removePositions, HashSet<Long> parents);
-        //TODO send request datas
-        void onTodoUpdated(ArrayList<Long> updates);
 
         void onSubjectAdded(ArrayList<Long> creates);
         void onSubjectRemoved(ArrayList<Long> removes);

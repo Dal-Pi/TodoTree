@@ -25,15 +25,6 @@ public class TodoReadTask extends AsyncTask<Void, Void, ArrayList<TodoData>> {
 
     @Override
     protected ArrayList<TodoData> doInBackground(Void... params) {
-        Log.d(TodoTree.TAG, "start to loading todos");
-        //TODO remove
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Log.d(TodoTree.TAG, "end loading todos");
-
         ArrayList<TodoData> results = new ArrayList<>();
         TodoTreeDbHelper dbHelper = new TodoTreeDbHelper(mContextRef.get());
         SQLiteDatabase db = dbHelper.getReadableDatabase();
