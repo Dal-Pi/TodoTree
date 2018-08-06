@@ -30,6 +30,7 @@ public class CheckListFragment extends Fragment
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
 
+    private RecyclerView mCheckListView;
     private TodoItemRecyclerViewAdapter mAdapter;
 
     private FloatingActionButton mFab;
@@ -61,19 +62,19 @@ public class CheckListFragment extends Fragment
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fargment_todo_list, container, false);
 
-        RecyclerView checkListView = view.findViewById(R.id.frag_list_check);
+        mCheckListView = view.findViewById(R.id.frag_list_check);
         Context context = view.getContext();
         if (mColumnCount <= 1) {
-            checkListView.setLayoutManager(new LinearLayoutManager(context));
+            mCheckListView.setLayoutManager(new LinearLayoutManager(context));
         } else {
-            checkListView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+            mCheckListView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
         mAdapter = new TodoItemRecyclerViewAdapter(getContext(),
                 TodoProvider.getInstance().getAllTodo());
         mAdapter.setHasStableIds(true);
         mAdapter.attachSelectListener(this);
-        checkListView.setAdapter(mAdapter);
-        checkListView.setHasFixedSize(true);
+        mCheckListView.setAdapter(mAdapter);
+        mCheckListView.setHasFixedSize(true);
 
         mFab = view.findViewById(R.id.frag_fab_add_todo);
         mFab.setOnClickListener(new View.OnClickListener() {
@@ -109,8 +110,11 @@ public class CheckListFragment extends Fragment
             }
             int pos = provider.getIndex(added);
             Log.d(TodoTree.TAG, "[CheckListFragment::onTodoAdded] id:" + added + ", pos:" + pos);
-            if (pos >= 0)
+            if (pos >= 0) {
+                if (pos == 0)
+                    mCheckListView.getLayoutManager().scrollToPosition(pos);
                 mAdapter.notifyItemInserted(pos);
+            }
         }
     }
     @Override
