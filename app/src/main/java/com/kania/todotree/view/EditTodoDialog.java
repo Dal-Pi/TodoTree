@@ -68,16 +68,16 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         return fragment;
     }
 
-    public void saveArgs(Bundle args) {
-        args.putLong(ARG_BASE_TODO_ID, TodoData.NON_ID);
-        args.putLong(ARG_SELECTED_SUBJECT_ID, mSelectedSubjectId);
-        args.putString(ARG_EDITED_NAME, mEditedName);
-        args.putLong(ARG_SET_DUE_DATE, mSetDueDate);
+    public void saveStates(Bundle bundle) {
+        bundle.putLong(ARG_BASE_TODO_ID, mBaseTodoId);
+        bundle.putLong(ARG_SELECTED_SUBJECT_ID, mSelectedSubjectId);
+        bundle.putString(ARG_EDITED_NAME, mEditedName);
+        bundle.putLong(ARG_SET_DUE_DATE, mSetDueDate);
     }
 
     public void restoreSavedData(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            mBaseTodoId = TodoData.NON_ID;
+            mBaseTodoId = savedInstanceState.getLong(ARG_BASE_TODO_ID);
             mSelectedSubjectId = savedInstanceState.getLong(ARG_SELECTED_SUBJECT_ID);
             mEditedName = savedInstanceState.getString(ARG_EDITED_NAME);
             mSetDueDate = savedInstanceState.getLong(ARG_SET_DUE_DATE);
@@ -284,7 +284,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        saveArgs(outState);
+        saveStates(outState);
     }
 
     @Override

@@ -36,6 +36,7 @@ public class TodoItemRecyclerViewAdapter
     private final List<TodoData> mItems;
 
     private int mSelectedPos;
+    private long mSelectedId;
 
     private ArrayList<OnTodoItemActionListener> mTodoActionListeners;
 
@@ -43,7 +44,12 @@ public class TodoItemRecyclerViewAdapter
         mContext = context;
         mItems = items;
         mSelectedPos = NO_ITEM_SELECTED;
+        mSelectedId = TodoData.NON_ID;
         mTodoActionListeners = new ArrayList<>();
+    }
+
+    public void setSelectedIdForInit(long initId) {
+        mSelectedId = initId;
     }
 
     @Override
@@ -68,7 +74,8 @@ public class TodoItemRecyclerViewAdapter
         holder.mContentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                select(holder);
+                //select(holder);
+                selectHolder(holder);
             }
         });
 
@@ -140,7 +147,8 @@ public class TodoItemRecyclerViewAdapter
                 releaseCompleteBySubTodo(todo);
                 TodoProvider.getInstance().editTodo(v.getContext(), requestTodoData);
                 holder.mEditSubTodoName.setText("");
-                select(holder);
+                //select(holder);
+                cancelSelect();
             }
         });
     }
@@ -162,8 +170,15 @@ public class TodoItemRecyclerViewAdapter
         holder.mIdDebug.setText(todo.getId() + " selected");
         holder.mIdDebug.setTextColor(color);
 
-        if (TodoProvider.getInstance().getSelected() == todo.getId()) {
+        if (getSelectedId() == todo.getId()) {
             holder.mMenuLayout.setVisibility(View.VISIBLE);
+            int pos = holder.getAdapterPosition();
+            if (mSelectedPos != pos) {
+                //debug
+                Log.d(TodoTree.TAG, "[TodoItemRecyclerViewAdapter::decorateTodoItem] recreated case");
+                mSelectedPos = pos;
+                notifySelectObservers(getSelectedId());
+            }
         } else {
             holder.mMenuLayout.setVisibility(View.GONE);
         }
@@ -189,8 +204,7 @@ public class TodoItemRecyclerViewAdapter
     }
 
     private void decorateHandleButton(final Button btnHandle, final TodoData todo) {
-        boolean isVisible = todo.isCompleted() ||
-                (TodoProvider.getInstance().getSelected() == todo.getId());
+        boolean isVisible = todo.isCompleted() || (getSelectedId() == todo.getId());
         btnHandle.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
         if (todo.isCompleted()) {
             if (todo.isRootTodo()) btnHandle.setText(R.string.item_menu_btn_done);
@@ -199,16 +213,19 @@ public class TodoItemRecyclerViewAdapter
         else btnHandle.setText(R.string.item_menu_btn_edit);
     }
 
-    private void select(final TodoViewHolder holder) {
+    private void selectHolder(final TodoViewHolder holder) {
         int position = holder.getAdapterPosition();
-        Log.d("todo_tree", "[TodoItemRecyclerViewAdapter] selected pos : " + holder.getAdapterPosition()
+        Log.d("todo_tree", "[TodoItemRecyclerViewAdapter::selectHolder] selected pos : " + holder.getAdapterPosition()
                 + ", id = " + holder.mItem.getId());
-        Log.d("todo_tree", "[TodoItemRecyclerViewAdapter] selected item : " + holder.mItem.toString());
+        Log.d("todo_tree", "[TodoItemRecyclerViewAdapter::selectHolder] selected item : " + holder.mItem.toString());
 
-        TodoProvider.getInstance().select(holder.mItem.getId());
+        //TodoProvider.getInstance().select(holder.mItem.getId());
 
+        select(position, holder.mItem.getId());
+        /*
         if (mSelectedPos == NO_ITEM_SELECTED) {
             mSelectedPos = position;
+            mSelectedId = holder.mItem.getId();
             notifyItemChanged(position);
         } else {
             if (mSelectedPos != position) {
@@ -216,15 +233,15 @@ public class TodoItemRecyclerViewAdapter
                 mSelectedPos = position;
                 notifyItemChanged(prev);
                 notifyItemChanged(position);
+                mSelectedId = holder.mItem.getId();
             } else {
-                int prev = mSelectedPos;
-                mSelectedPos = NO_ITEM_SELECTED;
-                notifyItemChanged(prev);
+                cancelSelect();
             }
             hideInputMethod(holder.mEditSubTodoName);
         }
-        notifySelectObservers(mSelectedPos == NO_ITEM_SELECTED ?
-                TodoData.NON_ID : holder.mItem.getId());
+        notifySelectObservers(mSelectedId);
+        */
+        hideInputMethod(holder.mEditSubTodoName);
     }
 
     private void releaseCompleteBySubTodo(final TodoData todo) {
@@ -237,10 +254,41 @@ public class TodoItemRecyclerViewAdapter
         notifyDataSetChanged();
     }
 
+    private void select(int pos, long id) {
+        if (pos == NO_ITEM_SELECTED || id == TodoData.NON_ID) {
+            Log.d(TodoTree.TAG, "[TodoItemRecyclerViewAdapter::select] invalid selection");
+            return;
+        }
+
+        if (mSelectedId == TodoData.NON_ID) {
+            mSelectedPos = pos;
+            mSelectedId = id;
+            notifyItemChanged(pos);
+        } else {
+            if (mSelectedId != id) {
+                int prev = mSelectedPos;
+                mSelectedPos = pos;
+                notifyItemChanged(prev);
+                notifyItemChanged(pos);
+                mSelectedId = id;
+            } else {
+                int prev = mSelectedPos;
+                mSelectedPos = NO_ITEM_SELECTED;
+                mSelectedId = TodoData.NON_ID;
+                notifyItemChanged(prev);
+            }
+        }
+        notifySelectObservers(mSelectedId);
+    }
+
     public void cancelSelect() {
-        mSelectedPos = NO_ITEM_SELECTED;
-        TodoProvider.getInstance().cancelSelect();
-        notifySelectObservers(TodoData.NON_ID);
+        if (mSelectedPos != NO_ITEM_SELECTED) {
+            select(mSelectedPos, mSelectedId);
+        }
+    }
+
+    public long getSelectedId() {
+        return mSelectedId;
     }
 
     private void hideInputMethod(EditText edit) {

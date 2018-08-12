@@ -2,6 +2,7 @@ package com.kania.todotree.view;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -22,12 +23,12 @@ import com.kania.todotree.data.TodoProvider;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
 
 public class CheckListFragment extends Fragment
         implements TodoProvider.IDataObserver,
         TodoItemRecyclerViewAdapter.OnTodoItemActionListener {
     private static final String ARG_COLUMN_COUNT = "column-count";
+    private static final String ARG_SELECTED_ID = "selected_id";
     private int mColumnCount = 1;
 
     private RecyclerView mCheckListView;
@@ -51,7 +52,6 @@ public class CheckListFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
@@ -73,6 +73,10 @@ public class CheckListFragment extends Fragment
                 TodoProvider.getInstance().getAllTodo());
         mAdapter.setHasStableIds(true);
         mAdapter.attachSelectListener(this);
+        if (savedInstanceState != null) {
+            long selectedId = savedInstanceState.getLong(ARG_SELECTED_ID, TodoData.NON_ID);
+            mAdapter.setSelectedIdForInit(selectedId);
+        }
         mCheckListView.setAdapter(mAdapter);
         mCheckListView.setHasFixedSize(true);
 
@@ -86,17 +90,26 @@ public class CheckListFragment extends Fragment
         return view;
     }
 
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         TodoProvider.getInstance().attachObserver(this);
+        //debug
+        Log.d(TodoTree.TAG, "[CheckListFragment::onAttach] attached frag : " + this.hashCode());
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         TodoProvider.getInstance().detachObserver(this);
+        //debug
+        Log.d(TodoTree.TAG, "[CheckListFragment::onDetach] detached frag : " + this.hashCode());
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(ARG_SELECTED_ID, mAdapter.getSelectedId());
     }
 
     @Override
@@ -178,5 +191,13 @@ public class CheckListFragment extends Fragment
         DialogFragment editTodoDialog = EditTodoDialog.newInstance(todoId);
         editTodoDialog.show(getActivity().getSupportFragmentManager(),
                 EditTodoDialog.class.getName());
+    }
+
+    public boolean cancelSelectIfSelected() {
+        if (mAdapter != null && (mAdapter.getSelectedId() != TodoData.NON_ID)) {
+            mAdapter.cancelSelect();
+            return true;
+        }
+        return false;
     }
 }

@@ -193,6 +193,7 @@ public class TodoProvider implements ITodoProvider {
     }
 
     //TODO select는 view 종속적이므로 없어져야함
+    /*
     public long getSelected() {
         return mSelected;
     }
@@ -218,6 +219,7 @@ public class TodoProvider implements ITodoProvider {
     public void cancelSelect() {
         mSelected = NO_SELECTED;
     }
+    */
 
     public void editTodo(Context context, RequestTodoData requested) {
         if (requested.id == TodoData.NON_ID)

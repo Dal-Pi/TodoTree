@@ -6,19 +6,9 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:orientation="vertical" >
 
-    <fragment
-        android:id="@+id/panel_fragment"
-        android:name="com.kania.todotree.view.PanelFragment"
+    <FrameLayout
+        android:id="@+id/main_container_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:layout="@layout/fragment_panel" />
-
-    <fragment
-        android:id="@+id/check_fragment"
-        android:name="com.kania.todotree.view.CheckListFragment"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        tools:layout="@layout/fargment_todo_list" />
+        android:layout_height="match_parent"/>
 
 </LinearLayout>
