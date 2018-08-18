@@ -97,6 +97,11 @@ public class SubjectListFragment extends Fragment
     }
 
     @Override
+    public void onRefreshTodo() {
+        // do nothing
+    }
+
+    @Override
     public void onSubjectAdded(ArrayList<Long> creates) {
         //TODO handle each todo
         mAdapter.notifyDataSetChanged();

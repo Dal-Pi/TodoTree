@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 
 import com.kania.todotree.R;
 import com.kania.todotree.TodoTree;
@@ -23,6 +24,8 @@ import com.kania.todotree.view.common.EditTodoDialog;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import static android.content.Context.INPUT_METHOD_SERVICE;
 
 public class CheckListFragment extends Fragment
         implements TodoProvider.IDataObserver,
@@ -70,7 +73,7 @@ public class CheckListFragment extends Fragment
             mCheckListView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
         mAdapter = new TodoItemRecyclerViewAdapter(getContext(),
-                TodoProvider.getInstance().getAllTodo());
+                TodoProvider.getInstance().getShowingTodoList());
         mAdapter.setHasStableIds(true);
         mAdapter.attachSelectListener(this);
         if (savedInstanceState != null) {
@@ -129,6 +132,7 @@ public class CheckListFragment extends Fragment
                 mAdapter.notifyItemInserted(pos);
             }
         }
+        hideInputMethod();
     }
     @Override
     public void onTodoRemoved(ArrayList<Integer> removePositions, HashSet<Long> parents) {
@@ -159,6 +163,12 @@ public class CheckListFragment extends Fragment
             Log.d(TodoTree.TAG, "[CheckListFragment::onTodoUpdated] id:" + updated + ", pos:" + pos);
             mAdapter.notifyItemChanged(pos);
         }
+        hideInputMethod();
+    }
+
+    @Override
+    public void onRefreshTodo() {
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -172,7 +182,6 @@ public class CheckListFragment extends Fragment
     @Override
     public void onSubjectUpdated(ArrayList<Long> updates) {
         //TODO
-        //mAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -180,6 +189,7 @@ public class CheckListFragment extends Fragment
         if (mFab != null) {
             mFab.setVisibility(id == TodoData.NON_ID ? View.VISIBLE : View.GONE);
         }
+        hideInputMethod();
     }
 
     @Override
@@ -199,5 +209,14 @@ public class CheckListFragment extends Fragment
             return true;
         }
         return false;
+    }
+
+    private void hideInputMethod() {
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager =
+                    (InputMethodManager) getContext().getSystemService(INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(),0);
+        }
     }
 }

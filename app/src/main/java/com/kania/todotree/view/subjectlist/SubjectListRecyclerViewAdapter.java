@@ -11,6 +11,7 @@ import android.widget.Button;
 
 import com.kania.todotree.R;
 import com.kania.todotree.data.SubjectData;
+import com.kania.todotree.data.TodoProvider;
 import com.kania.todotree.view.todolist.TodoItemRecyclerViewAdapter;
 
 import java.util.ArrayList;
@@ -41,12 +42,33 @@ public class SubjectListRecyclerViewAdapter
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SubjectViewHolder holder, int position) {
-        SubjectData subject = mItems.get(position);
+    public void onBindViewHolder(@NonNull final SubjectViewHolder holder, int position) {
+        final SubjectData subject = mItems.get(position);
         holder.mItem = subject;
         holder.mBtnTitle.setText(subject.getName());
-        holder.mBtnTitle.setTextColor(ContextCompat.getColor(mContext, R.color.white));
-        holder.mLayout.setBackgroundColor(subject.getColor());
+        decorateItemByShowing(holder);
+
+        holder.mBtnTitle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ArrayList<Long> subjects = new ArrayList<>();
+                subjects.add(holder.mItem.getId());
+                TodoProvider.getInstance().setSubjectVisibility(subjects, !holder.mItem.isShowing());
+                //TODO after notify
+                decorateItemByShowing(holder);
+            }
+        });
+    }
+
+    private void decorateItemByShowing(final SubjectViewHolder holder) {
+        //TODO change design
+        if (holder.mItem.isShowing()) {
+            holder.mBtnTitle.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+            holder.mLayout.setBackgroundColor(holder.mItem.getColor());
+        } else {
+            holder.mBtnTitle.setTextColor(holder.mItem.getColor());
+            holder.mLayout.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
+        }
     }
 
     @Override

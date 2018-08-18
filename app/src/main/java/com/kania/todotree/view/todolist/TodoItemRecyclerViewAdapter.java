@@ -1,5 +1,6 @@
 package com.kania.todotree.view.todolist;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
@@ -220,30 +221,7 @@ public class TodoItemRecyclerViewAdapter
         Log.d("todo_tree", "[TodoItemRecyclerViewAdapter::selectHolder] selected pos : " + holder.getAdapterPosition()
                 + ", id = " + holder.mItem.getId());
         Log.d("todo_tree", "[TodoItemRecyclerViewAdapter::selectHolder] selected item : " + holder.mItem.toString());
-
-        //TodoProvider.getInstance().select(holder.mItem.getId());
-
         select(position, holder.mItem.getId());
-        /*
-        if (mSelectedPos == NO_ITEM_SELECTED) {
-            mSelectedPos = position;
-            mSelectedId = holder.mItem.getId();
-            notifyItemChanged(position);
-        } else {
-            if (mSelectedPos != position) {
-                int prev = mSelectedPos;
-                mSelectedPos = position;
-                notifyItemChanged(prev);
-                notifyItemChanged(position);
-                mSelectedId = holder.mItem.getId();
-            } else {
-                cancelSelect();
-            }
-            hideInputMethod(holder.mEditSubTodoName);
-        }
-        notifySelectObservers(mSelectedId);
-        */
-        hideInputMethod(holder.mEditSubTodoName);
     }
 
     private void releaseCompleteBySubTodo(final TodoData todo) {
@@ -292,16 +270,6 @@ public class TodoItemRecyclerViewAdapter
     public long getSelectedId() {
         return mSelectedId;
     }
-
-    private void hideInputMethod(EditText edit) {
-        InputMethodManager inputManager =
-                (InputMethodManager) mContext.getSystemService(INPUT_METHOD_SERVICE);
-        if (inputManager != null) {
-            inputManager.hideSoftInputFromWindow(edit.getWindowToken(),0);
-        }
-    }
-
-
 
     public void attachSelectListener(OnTodoItemActionListener listener) {
         mTodoActionListeners.add(listener);

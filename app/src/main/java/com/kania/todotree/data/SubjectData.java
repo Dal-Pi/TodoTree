@@ -8,6 +8,7 @@ public class SubjectData implements ISubjectData {
     private long mId;
     private String mName;
     private String mColorString;
+    private boolean mShowing;
 
     private ArrayList<ITodoData> mListeners;
 
@@ -15,6 +16,7 @@ public class SubjectData implements ISubjectData {
         mId = id;
         mName = name;
         mColorString = color;
+        mShowing = true;
 
         mListeners = new ArrayList<>();
     }
@@ -34,6 +36,13 @@ public class SubjectData implements ISubjectData {
     }
     public void setColor(String color) {
         mColorString = color;
+    }
+
+    public boolean isShowing() {
+        return mShowing;
+    }
+    public void setShowing(boolean showing) {
+        mShowing = showing;
     }
 
     public void addListener(ITodoData listener) {

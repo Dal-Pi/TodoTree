@@ -15,18 +15,18 @@ import com.kania.todotree.view.utils.TodoDateUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class TodoProvider implements ITodoProvider {
 
-    public static int NO_SELECTED = -1;
     private static TodoProvider mInstance;
 
     private ArrayList<TodoData> mRootTodoList;
     private ArrayList<TodoData> mAllTodoList;
+    private ArrayList<TodoData> mShowingTodoList;
     private HashMap<Long, TodoData> mTodoMap;
     private ArrayList<SubjectData> mSubjectList;
     private HashMap<Long, SubjectData> mSubjectMap;
-    private long mSelected = NO_SELECTED;
 
     private ArrayList<IDataObserver> mObservers;
 
@@ -45,6 +45,8 @@ public class TodoProvider implements ITodoProvider {
         mRootTodoList = new ArrayList<>();
         mAllTodoList = new ArrayList<>();
         mTodoMap = new HashMap<>();
+
+        mShowingTodoList = new ArrayList<>();
     }
 
     public void loadAllData(Context context) {
@@ -67,8 +69,11 @@ public class TodoProvider implements ITodoProvider {
         TodoReadTask todoReadTask = new TodoReadTask(context, new TodoReadTask.TodoReadTaskListener() {
             @Override
             public void onReadTodo(ArrayList<TodoData> results) {
-                ArrayList<TodoData> ret = arrangeTodo(results);
+                arrangeTodo(results);
                 for (IDataObserver observer : mObservers) {
+                    ArrayList<TodoData> ret = new ArrayList<>();
+                    for (TodoData todo : mShowingTodoList)
+                        ret.add(todo);
                     observer.onTodoAdded(ret);
                 }
 
@@ -78,14 +83,12 @@ public class TodoProvider implements ITodoProvider {
         });
         todoReadTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
 
-        Log.d(TodoTree.TAG, "[loadAllData] TodoProvider data loading complete");
+        Log.d(TodoTree.TAG, "[TodoProvider::loadAllData] data loading complete");
     }
 
-    private ArrayList<TodoData> arrangeTodo(ArrayList<TodoData> todos) {
-        ArrayList<TodoData> ret = new ArrayList<>();
+    private void arrangeTodo(ArrayList<TodoData> todos) {
         for (TodoData todo : todos)
         {
-            ret.add(todo);
             if (todo.isRootTodo())
                 mRootTodoList.add(todo);
             mTodoMap.put(todo.getId(), todo);
@@ -100,7 +103,7 @@ public class TodoProvider implements ITodoProvider {
             root.setDepth(0);
             arrangeTodoRecur(root);
         }
-        return ret;
+        updateShowingList();
     }
     private void arrangeTodoRecur(TodoData target) {
         mAllTodoList.add(target);
@@ -108,6 +111,15 @@ public class TodoProvider implements ITodoProvider {
             TodoData todo = mTodoMap.get(todoId);
             todo.setDepth(target.getDepth() + 1);
             arrangeTodoRecur(todo);
+        }
+    }
+
+    private void updateShowingList() {
+        mShowingTodoList.clear();
+        for (TodoData todo : mAllTodoList) {
+            if (mSubjectMap.get(todo.getSubject()).isShowing()) {
+                mShowingTodoList.add(todo);
+            }
         }
     }
 
@@ -122,7 +134,7 @@ public class TodoProvider implements ITodoProvider {
     }
 
     public int getIndex(TodoData todo) {
-        return mAllTodoList.indexOf(todo);
+        return mShowingTodoList.indexOf(todo);
     }
 
     private void insertSubject(SubjectData subject) {
@@ -142,6 +154,7 @@ public class TodoProvider implements ITodoProvider {
             pos = 0;
             mRootTodoList.add(pos, todo);
             mAllTodoList.add(pos, todo);
+            mShowingTodoList.add(pos, todo);
         } else {
             TodoData parent = mTodoMap.get(todo.getParent());
             Log.d("todo_tree", "[insertTodo] find parent:" + parent.getId());
@@ -152,6 +165,8 @@ public class TodoProvider implements ITodoProvider {
             pos = mAllTodoList.indexOf(parent) + childrenCount + 1;
             if (mAllTodoList.size() >= pos) {
                 mAllTodoList.add(pos, todo);
+                int showingPos = mShowingTodoList.indexOf(parent) + childrenCount + 1;
+                mShowingTodoList.add(showingPos, todo);
             } else {
                 Log.e("todo_tree", "[insertTodo] position over");
             }
@@ -170,7 +185,7 @@ public class TodoProvider implements ITodoProvider {
     }
 
     //TODO change as ID
-    private int removeTodo(TodoData todo) {
+    private void removeTodo(TodoData todo) {
         if (todo.isRootTodo() == false) {
             TodoData parent = mTodoMap.get(todo.getParent());
             parent.removeChild(todo.getId());
@@ -178,10 +193,8 @@ public class TodoProvider implements ITodoProvider {
         if (todo.isRootTodo()) {
             mRootTodoList.remove(todo);
         }
-        int pos = mAllTodoList.indexOf(todo);
         mAllTodoList.remove(todo);
         mTodoMap.remove(todo.getId());
-        return pos;
     }
 
     public ArrayList<TodoData> getAllTodo() {
@@ -192,34 +205,9 @@ public class TodoProvider implements ITodoProvider {
         return mSubjectList;
     }
 
-    //TODO select는 view 종속적이므로 없어져야함
-    /*
-    public long getSelected() {
-        return mSelected;
+    public ArrayList<TodoData> getShowingTodoList() {
+        return mShowingTodoList;
     }
-    public void select(long id) {
-
-        if (mTodoMap.containsKey(id)) {
-            if (mSelected != id) {
-                mSelected = id;
-                //TODO debug
-                Log.d("todo_tree", "[TodoProvider] selected : " + mSelected);
-            } else {
-                //TODO debug
-                Log.d("todo_tree", "[TodoProvider] canceled : " + mSelected);
-                cancelSelect();
-            }
-        } else {
-            //TODO debug
-            Log.e("todo_tree", "[TodoProvider] do not find selected id : " + id);
-            cancelSelect();
-        }
-    }
-
-    public void cancelSelect() {
-        mSelected = NO_SELECTED;
-    }
-    */
 
     public void editTodo(Context context, RequestTodoData requested) {
         if (requested.id == TodoData.NON_ID)
@@ -401,9 +389,9 @@ public class TodoProvider implements ITodoProvider {
                 ArrayList<Integer> deletePositions = new ArrayList<>();
                 HashSet<Long> updateCandidate = new HashSet<>();
                 for (long deleted : deletes) {
-                    Log.d(TodoTree.TAG, "[deleteTodo] deleted id:" + deleted);
+                    Log.d(TodoTree.TAG, "[TodoProvider::onDeletedTodo] deleted id:" + deleted);
                     TodoData todo = mTodoMap.get(deleted);
-                    deletePositions.add(mAllTodoList.indexOf(todo));
+                    deletePositions.add(mShowingTodoList.indexOf(todo));
                     if (todo.getParent() != TodoData.NON_ID)
                         updateCandidate.add(todo.getParent());
                     removeTodo(todo);
@@ -412,12 +400,26 @@ public class TodoProvider implements ITodoProvider {
                     updateCandidate.remove(deleted);
                 }
                 for (IDataObserver observer : mObservers) {
+                    //debug
+                    Log.d(TodoTree.TAG, "[TodoProvider::onDeletedTodo] updateCandidate size :" + updateCandidate.size());
                     observer.onTodoRemoved(deletePositions, updateCandidate);
                 }
             }
         });
         todoDeleteTask.setDeleteData(deleteTodoList);
         todoDeleteTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
+    public void setSubjectVisibility(List<Long> subjectIds, boolean showing) {
+        for (long subjectId : subjectIds) {
+            if (subjectId == SubjectData.NON_ID)
+                Log.e(TodoTree.TAG, "[TodoProvider::setSubjectVisibility] invalid id selected");
+            else
+                mSubjectMap.get(subjectId).setShowing(showing);
+        }
+        updateShowingList();
+        for (IDataObserver observer : mObservers)
+            observer.onRefreshTodo();
     }
 
     private void setAllChildTodoList(ArrayList<Long> deleteTodoList, long targetId) {
@@ -432,7 +434,7 @@ public class TodoProvider implements ITodoProvider {
     }
     private int getChildrenCountRecur(TodoData todo) {
         int evaluated = todo.getChildren().size();
-        Log.d("todo_tree", "getChildrenCountRecur() id:" + todo.getId() + ", childrenSize:" + todo.getChildren().size());
+        Log.d(TodoTree.TAG, "getChildrenCountRecur() id:" + todo.getId() + ", childrenSize:" + todo.getChildren().size());
         for (long td : todo.getChildren()) {
             evaluated += getChildrenCountRecur(mTodoMap.get(td));
         }
@@ -441,7 +443,12 @@ public class TodoProvider implements ITodoProvider {
 
     public boolean isCheckable(long id) {
         boolean ret = true;
+        //debug
+        Log.d(TodoTree.TAG, "[TodoProvider::isCheckable] check id :" + id);
         TodoData todo = mTodoMap.get(id);
+        if (todo == null) {
+            Log.e(TodoTree.TAG, "[TodoProvider::isCheckable] todo is null");
+        }
         for (long childId : todo.getChildren())
             if (mTodoMap.get(childId).isCompleted() == false)
                 return false;
@@ -513,6 +520,7 @@ public class TodoProvider implements ITodoProvider {
         void onTodoUpdated(ArrayList<RequestTodoData> origins, ArrayList<TodoData> updates);
         //TODO refector!
         void onTodoRemoved(ArrayList<Integer> removePositions, HashSet<Long> parents);
+        void onRefreshTodo();
 
         void onSubjectAdded(ArrayList<Long> creates);
         void onSubjectRemoved(ArrayList<Long> removes);

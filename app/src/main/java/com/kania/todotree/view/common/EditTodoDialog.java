@@ -302,6 +302,11 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     }
 
     @Override
+    public void onRefreshTodo() {
+        //do nothing
+    }
+
+    @Override
     public void onSubjectAdded(ArrayList<Long> creates) {
         for (long added : creates) {
             Log.d("todo_tree", "onSubjectAdded() called, id : " + added);
