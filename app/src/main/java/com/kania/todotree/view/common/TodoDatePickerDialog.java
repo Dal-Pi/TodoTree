@@ -1,4 +1,4 @@
-package com.kania.todotree.view;
+package com.kania.todotree.view.common;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;

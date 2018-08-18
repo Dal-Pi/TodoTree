@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layoutManager="LinearLayoutManager"
-        tools:context=".view.CheckListFragment"
+        tools:context=".view.todolist.CheckListFragment"
         tools:listitem="@layout/todo_list_item" />
 
     <android.support.design.widget.FloatingActionButton

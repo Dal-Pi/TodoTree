@@ -1,4 +1,4 @@
-package com.kania.todotree.view;
+package com.kania.todotree.view.utils;
 
 import android.content.Context;
 import android.text.format.DateUtils;

@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.v4.content.ContextCompat;
 
 import com.kania.todotree.R;
 
@@ -69,7 +70,8 @@ public class TodoTreeDbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_SUBJECT_ENTRIES);
         ContentValues cvDefaultSubject = new ContentValues();
         cvDefaultSubject.put(SubjectEntry.SUBJECT_NAME, mContext.getString(R.string.default_subject_name));
-        cvDefaultSubject.put(SubjectEntry.COLOR, "#FF555555");
+        cvDefaultSubject.put(SubjectEntry.COLOR,
+                ContextCompat.getColor(mContext, R.color.default_subject_color));
         db.insert(SubjectEntry.TABLE_NAME, null, cvDefaultSubject);
         db.execSQL(SQL_CREATE_TODO_ENTRIES);
     }

@@ -10,7 +10,7 @@ import com.kania.todotree.data.QueryTask.SubjectReadTask;
 import com.kania.todotree.data.QueryTask.TodoDeleteTask;
 import com.kania.todotree.data.QueryTask.TodoUpdateTask;
 import com.kania.todotree.data.QueryTask.TodoReadTask;
-import com.kania.todotree.view.TodoDateUtil;
+import com.kania.todotree.view.utils.TodoDateUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;

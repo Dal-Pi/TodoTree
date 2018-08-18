@@ -7,17 +7,18 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.kania.todotree.R;
-import com.kania.todotree.TodoTree;
+import com.kania.todotree.view.subjectlist.SubjectListFragment;
+import com.kania.todotree.view.todolist.CheckListFragment;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int END_TIMER_MILLISECOND = 3000;
+    private SubjectListFragment mSubjectListFragment;
     private CheckListFragment mCheckListFragment;
     private CountDownTimer mBackTimer;
     private boolean mIsNowBackTimer;
@@ -32,31 +33,13 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             addFragment();
         } else {
-            Fragment retainFragment = getSupportFragmentManager().
-                    findFragmentById(R.id.main_container_list);
-            if (retainFragment instanceof CheckListFragment)
-                mCheckListFragment = (CheckListFragment)retainFragment;
-            else {
-                //TODO else case
-            }
+            restoreFragment();
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        /*
-        if (mCheckListFragment == null) {
-            mCheckListFragment = getSupportFragmentManager().
-                    findFragmentById(R.id.main_container_list);
-            if (mCheckListFragment != null) {
-
-            } else {
-                Log.e(TodoTree.TAG, "[MainActivity::onCreate] cannot find CheckListFragment when restarting");
-                addFragment();
-            }
-        }
-*/
     }
 
     @Override
@@ -122,10 +105,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addFragment() {
-        mCheckListFragment = CheckListFragment.newInstance(1);
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.main_container_list, mCheckListFragment);
-        fragmentTransaction.commit();
+
+        mCheckListFragment = CheckListFragment.newInstance(1);
+        FragmentTransaction todoFragmentTransaction = fragmentManager.beginTransaction();
+        todoFragmentTransaction.add(R.id.main_container_todo_list, mCheckListFragment);
+        todoFragmentTransaction.commit();
+
+        mSubjectListFragment = SubjectListFragment.newInstance();
+        FragmentTransaction subjectFragmentTransaction = fragmentManager.beginTransaction();
+        subjectFragmentTransaction.add(R.id.main_container_subject_list, mSubjectListFragment);
+        subjectFragmentTransaction.commit();
+    }
+
+    private void restoreFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        Fragment retainSubjectFragment = fragmentManager.
+                findFragmentById(R.id.main_container_subject_list);
+        if (retainSubjectFragment instanceof SubjectListFragment)
+            mSubjectListFragment = (SubjectListFragment)retainSubjectFragment;
+
+        Fragment retainTodoFragment = fragmentManager.
+                findFragmentById(R.id.main_container_todo_list);
+        if (retainTodoFragment instanceof CheckListFragment)
+            mCheckListFragment = (CheckListFragment)retainTodoFragment;
     }
 }

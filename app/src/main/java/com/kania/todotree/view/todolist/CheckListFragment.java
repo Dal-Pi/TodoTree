@@ -1,4 +1,4 @@
-package com.kania.todotree.view;
+package com.kania.todotree.view.todolist;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -17,9 +17,9 @@ import android.view.ViewGroup;
 import com.kania.todotree.R;
 import com.kania.todotree.TodoTree;
 import com.kania.todotree.data.RequestTodoData;
-import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
+import com.kania.todotree.view.common.EditTodoDialog;
 
 import java.util.ArrayList;
 import java.util.HashSet;

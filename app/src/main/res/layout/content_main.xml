@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,8 +7,16 @@
     android:orientation="vertical" >
 
     <FrameLayout
-        android:id="@+id/main_container_list"
+        android:id="@+id/main_container_subject_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"/>
+    <FrameLayout
+        android:id="@+id/main_container_todo_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/main_container_subject_list"
+        android:layout_alignParentTop="true"/>
 
-</LinearLayout>
+
+</RelativeLayout>
