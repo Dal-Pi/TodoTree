@@ -69,9 +69,10 @@ public class TodoTreeDbHelper extends SQLiteOpenHelper {
     private void createWithDefaultSubject(SQLiteDatabase db) {
         db.execSQL(SQL_CREATE_SUBJECT_ENTRIES);
         ContentValues cvDefaultSubject = new ContentValues();
-        cvDefaultSubject.put(SubjectEntry.SUBJECT_NAME, mContext.getString(R.string.default_subject_name));
+        cvDefaultSubject.put(SubjectEntry.SUBJECT_NAME,
+                mContext.getString(R.string.default_subject_name));
         cvDefaultSubject.put(SubjectEntry.COLOR,
-                ContextCompat.getColor(mContext, R.color.default_subject_color));
+                mContext.getString(R.string.default_subject_color_string));
         db.insert(SubjectEntry.TABLE_NAME, null, cvDefaultSubject);
         db.execSQL(SQL_CREATE_TODO_ENTRIES);
     }

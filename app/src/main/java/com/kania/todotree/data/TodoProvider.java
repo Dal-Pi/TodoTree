@@ -193,6 +193,7 @@ public class TodoProvider implements ITodoProvider {
         if (todo.isRootTodo()) {
             mRootTodoList.remove(todo);
         }
+        mShowingTodoList.remove(todo);
         mAllTodoList.remove(todo);
         mTodoMap.remove(todo.getId());
     }
@@ -255,26 +256,23 @@ public class TodoProvider implements ITodoProvider {
         TodoData target = mTodoMap.get(requested.id);
         //TODO refector!
         if (target.isRootTodo() && (target.getSubject() != requested.subject)) {
-            ArrayList<Long> allChildList = new ArrayList<>();
-            setAllChildTodoList(allChildList, requested.id);
-            for (Long childId : allChildList) {
-                TodoData child = mTodoMap.get(childId);
-                RequestTodoData childRequest;
-                if (child.isRootTodo()) {
-                    childRequest = new RequestTodoData(requested.subject, requested.name, requested.parent, requested.updatedDate);
-                    childRequest.setDueDate(requested.dueDate);
-                    childRequest.setComplete(requested.complete);
-                    childRequest.setId(requested.id);
+            ArrayList<Long> allTodoList = new ArrayList<>();
+            setAllChildTodoList(allTodoList, requested.id);
+            for (Long eachTodoId : allTodoList) {
+                TodoData eachTodo = mTodoMap.get(eachTodoId);
+                RequestTodoData eachRequest;
+                if (eachTodo.isRootTodo()) {
+                    eachRequest = new RequestTodoData(requested.subject, requested.name, requested.parent, requested.updatedDate);
+                    eachRequest.setDueDate(requested.dueDate);
+                    eachRequest.setComplete(requested.complete);
+                    eachRequest.setId(requested.id);
                 } else {
-                    childRequest = new RequestTodoData(requested.subject, child.getName(), child.getParent(), child.getLastUpdated());
-                    childRequest.setDueDate(child.getDueDate());
-                    childRequest.setComplete(child.isCompleted());
-                    childRequest.setId(child.getId());
+                    eachRequest = new RequestTodoData(requested.subject, eachTodo.getName(), eachTodo.getParent(), eachTodo.getLastUpdated());
+                    eachRequest.setDueDate(eachTodo.getDueDate());
+                    eachRequest.setComplete(eachTodo.isCompleted());
+                    eachRequest.setId(eachTodo.getId());
                 }
-                childRequest.setDueDate(child.getDueDate());
-                childRequest.setComplete(child.isCompleted());
-                childRequest.setId(child.getId());
-                requests.add(childRequest);
+                requests.add(eachRequest);
             }
         } else {
             requests.add(requested);
@@ -389,7 +387,7 @@ public class TodoProvider implements ITodoProvider {
                 ArrayList<Integer> deletePositions = new ArrayList<>();
                 HashSet<Long> updateCandidate = new HashSet<>();
                 for (long deleted : deletes) {
-                    Log.d(TodoTree.TAG, "[TodoProvider::onDeletedTodo] deleted id:" + deleted);
+                    Log.d(TodoTree.TAG, "[TodoProvider::deleteTodo] deleted id:" + deleted);
                     TodoData todo = mTodoMap.get(deleted);
                     deletePositions.add(mShowingTodoList.indexOf(todo));
                     if (todo.getParent() != TodoData.NON_ID)
@@ -399,9 +397,9 @@ public class TodoProvider implements ITodoProvider {
                 for (long deleted : deletes) {
                     updateCandidate.remove(deleted);
                 }
+                //debug
+                Log.d(TodoTree.TAG, "[TodoProvider::deleteTodo] updateCandidate size :" + updateCandidate.size());
                 for (IDataObserver observer : mObservers) {
-                    //debug
-                    Log.d(TodoTree.TAG, "[TodoProvider::onDeletedTodo] updateCandidate size :" + updateCandidate.size());
                     observer.onTodoRemoved(deletePositions, updateCandidate);
                 }
             }

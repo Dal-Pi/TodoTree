@@ -117,6 +117,7 @@ public class CheckListFragment extends Fragment
 
     @Override
     public void onTodoAdded(ArrayList<TodoData> creates) {
+        cancelSelectIfSelected();
         TodoProvider provider = TodoProvider.getInstance();
         for (TodoData added : creates) {
             if (added.isRootTodo() == false) {
@@ -136,11 +137,14 @@ public class CheckListFragment extends Fragment
     }
     @Override
     public void onTodoRemoved(ArrayList<Integer> removePositions, HashSet<Long> parents) {
+        cancelSelectIfSelected();
         TodoProvider provider = TodoProvider.getInstance();
         for (int removePos : removePositions) {
             mAdapter.notifyItemRemoved(removePos);
-            Log.d(TodoTree.TAG, "onTodoRemoved(), pos:" + removePos);
+            Log.d(TodoTree.TAG, "[CheckListFragment::onTodoRemoved] pos : " + removePos);
         }
+        //debug
+        Log.d(TodoTree.TAG, "[CheckListFragment::onTodoRemoved] parents size : " + parents.size());
         for (long parent : parents) {
             TodoData todo = provider.getTodo(parent);
             int pos = provider.getIndex(todo);
