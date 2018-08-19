@@ -46,23 +46,22 @@ public class SubjectListRecyclerViewAdapter
         final SubjectData subject = mItems.get(position);
         holder.mItem = subject;
         holder.mBtnTitle.setText(subject.getName());
-        decorateItemByShowing(holder);
+        decorateItemByShowing(holder, subject.isShowing());
 
         holder.mBtnTitle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<Long> subjects = new ArrayList<>();
-                subjects.add(holder.mItem.getId());
-                TodoProvider.getInstance().setSubjectVisibility(subjects, !holder.mItem.isShowing());
-                //TODO after notify
-                decorateItemByShowing(holder);
+                decorateItemByShowing(holder, !holder.mItem.isShowing());
+                TodoProvider.getInstance()
+                        .setSubjectVisibility(holder.mItem.getId(), !holder.mItem.isShowing());
+                mListener.onSubjectSelected();
             }
         });
     }
 
-    private void decorateItemByShowing(final SubjectViewHolder holder) {
+    private void decorateItemByShowing(final SubjectViewHolder holder, boolean bShowing) {
         //TODO change design
-        if (holder.mItem.isShowing()) {
+        if (bShowing) {
             holder.mBtnTitle.setTextColor(ContextCompat.getColor(mContext, R.color.white));
             holder.mLayout.setBackgroundColor(holder.mItem.getColor());
         } else {
@@ -88,7 +87,6 @@ public class SubjectListRecyclerViewAdapter
     }
 
     public interface OnSubjectItemActionListener {
-        void onSubjectSelected(SubjectData sub);
-        void onAllSelected();
+        void onSubjectSelected(/*SubjectData sub*//*TODO not needed yet*/);
     }
 }

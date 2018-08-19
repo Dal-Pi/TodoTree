@@ -408,13 +408,23 @@ public class TodoProvider implements ITodoProvider {
         todoDeleteTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
-    public void setSubjectVisibility(List<Long> subjectIds, boolean showing) {
-        for (long subjectId : subjectIds) {
-            if (subjectId == SubjectData.NON_ID)
-                Log.e(TodoTree.TAG, "[TodoProvider::setSubjectVisibility] invalid id selected");
-            else
-                mSubjectMap.get(subjectId).setShowing(showing);
+    public void setAllSubjectVisibility(boolean showing) {
+        for (SubjectData subject : mSubjectList) {
+            subject.setShowing(showing);
         }
+        updateAndNotifyShowingList();
+    }
+
+    public void setSubjectVisibility(long subjectId, boolean showing) {
+        if (subjectId == SubjectData.NON_ID) {
+            Log.e(TodoTree.TAG, "[TodoProvider::setSubjectVisibility] invalid id selected");
+        } else {
+            mSubjectMap.get(subjectId).setShowing(showing);
+            updateAndNotifyShowingList();
+        }
+    }
+
+    private void updateAndNotifyShowingList() {
         updateShowingList();
         for (IDataObserver observer : mObservers)
             observer.onRefreshTodo();

@@ -3,6 +3,7 @@ package com.kania.todotree.view.subjectlist;
 import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,6 +22,8 @@ import com.kania.todotree.data.TodoProvider;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import javax.security.auth.Subject;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -31,6 +34,7 @@ public class SubjectListFragment extends Fragment
     private RecyclerView mSubjectListView;
     private SubjectListRecyclerViewAdapter mAdapter;
 
+    private View mLayoutAll;
     private Button mBtnAll;
 
     public static SubjectListFragment newInstance() {
@@ -44,6 +48,7 @@ public class SubjectListFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_subject_list, container, false);
 
         mSubjectListView = view.findViewById(R.id.sublistfrag_list);
+        mLayoutAll = view.findViewById(R.id.sublistfrag_layout_all);
         mBtnAll = view.findViewById(R.id.sublistfrag_btn_all);
 
         Context context = view.getContext();
@@ -54,10 +59,53 @@ public class SubjectListFragment extends Fragment
         mAdapter.setSubjectItemListener(this);
         mSubjectListView.setAdapter(mAdapter);
 
-        //TODO listener for allbutton
+        decorateAllBtnByShowing(checkAllSubjectShowing());
+        mBtnAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean bAllShowing = checkAllSubjectShowing();
+                TodoProvider.getInstance().setAllSubjectVisibility(!bAllShowing);
+                decorateAllBtnByShowing(!bAllShowing);
+                mAdapter.notifyDataSetChanged();
+            }
+        });
 
         return view;
     }
+
+    private boolean checkAllSubjectShowing() {
+        boolean bAllShowing = true;
+        ArrayList<SubjectData> subjects = TodoProvider.getInstance().getAllSubject();
+        for (SubjectData subject : subjects) {
+            if (subject.isShowing() == false) {
+                bAllShowing = false;
+                break;
+            }
+        }
+        return bAllShowing;
+    }
+
+    private void decorateAllBtnByShowing(boolean bAllShowing) {
+        if (bAllShowing) {
+            mBtnAll.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
+            mLayoutAll.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.all_subject_btn_color));
+        } else {
+            mBtnAll.setTextColor(ContextCompat.getColor(getActivity(), R.color.all_subject_btn_color));
+            mLayoutAll.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
+        }
+    }
+    /*
+    private void decorateItemByShowing(final SubjectViewHolder holder) {
+        //TODO change design
+        if (holder.mItem.isShowing()) {
+            holder.mBtnTitle.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+            holder.mLayout.setBackgroundColor(holder.mItem.getColor());
+        } else {
+            holder.mBtnTitle.setTextColor(holder.mItem.getColor());
+            holder.mLayout.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
+        }
+    }
+     */
 
     @Override
     public void onAttach(Context context) {
@@ -72,13 +120,8 @@ public class SubjectListFragment extends Fragment
     }
 
     @Override
-    public void onSubjectSelected(SubjectData sub) {
-
-    }
-
-    @Override
-    public void onAllSelected() {
-
+    public void onSubjectSelected() {
+        decorateAllBtnByShowing(checkAllSubjectShowing());
     }
 
     @Override
