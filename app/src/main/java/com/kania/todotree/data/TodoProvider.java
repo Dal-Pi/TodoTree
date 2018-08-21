@@ -15,7 +15,6 @@ import com.kania.todotree.view.utils.TodoDateUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 public class TodoProvider implements ITodoProvider {
 
@@ -427,7 +426,7 @@ public class TodoProvider implements ITodoProvider {
     private void updateAndNotifyShowingList() {
         updateShowingList();
         for (IDataObserver observer : mObservers)
-            observer.onRefreshTodo();
+            observer.onShowingTodoRefreshed();
     }
 
     private void setAllChildTodoList(ArrayList<Long> deleteTodoList, long targetId) {
@@ -528,7 +527,7 @@ public class TodoProvider implements ITodoProvider {
         void onTodoUpdated(ArrayList<RequestTodoData> origins, ArrayList<TodoData> updates);
         //TODO refector!
         void onTodoRemoved(ArrayList<Integer> removePositions, HashSet<Long> parents);
-        void onRefreshTodo();
+        void onShowingTodoRefreshed();
 
         void onSubjectAdded(ArrayList<Long> creates);
         void onSubjectRemoved(ArrayList<Long> removes);

@@ -302,7 +302,7 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     }
 
     @Override
-    public void onRefreshTodo() {
+    public void onShowingTodoRefreshed() {
         //do nothing
     }
 

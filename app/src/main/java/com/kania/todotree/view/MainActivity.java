@@ -15,7 +15,8 @@ import com.kania.todotree.R;
 import com.kania.todotree.view.subjectlist.SubjectListFragment;
 import com.kania.todotree.view.todolist.CheckListFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements SubjectListFragment.OnShowingSubjectListener {
 
     private static final int END_TIMER_MILLISECOND = 3000;
     private SubjectListFragment mSubjectListFragment;
@@ -66,11 +67,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        //TODO check fragment select. if select just deselect, if not, start end timer.(select move task first)
-        if (mCheckListFragment != null) {
-            if (mCheckListFragment.cancelSelectIfSelected()) {
-                return;
-            }
+        if (cancelSelectIfSelected()) {
+            return;
         }
 
         if (mBackTimer != null && mIsNowBackTimer) {
@@ -89,6 +87,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }.start();
         }
+    }
+
+    private boolean cancelSelectIfSelected() {
+        if (mCheckListFragment != null) {
+            return mCheckListFragment.cancelSelectIfSelected();
+        }
+        return false;
     }
 
     @Override
@@ -130,5 +135,15 @@ public class MainActivity extends AppCompatActivity {
                 findFragmentById(R.id.main_container_todo_list);
         if (retainTodoFragment instanceof CheckListFragment)
             mCheckListFragment = (CheckListFragment)retainTodoFragment;
+    }
+
+    @Override
+    public void onSelectAllSubject() {
+        cancelSelectIfSelected();
+    }
+
+    @Override
+    public void onSelectSubject(long subjectId) {
+        cancelSelectIfSelected();
     }
 }

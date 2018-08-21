@@ -54,7 +54,9 @@ public class SubjectListRecyclerViewAdapter
                 decorateItemByShowing(holder, !holder.mItem.isShowing());
                 TodoProvider.getInstance()
                         .setSubjectVisibility(holder.mItem.getId(), !holder.mItem.isShowing());
-                mListener.onSubjectSelected();
+                if (mListener != null) {
+                    mListener.onSubjectSelected(holder.mItem.getId());
+                }
             }
         });
     }
@@ -87,6 +89,6 @@ public class SubjectListRecyclerViewAdapter
     }
 
     public interface OnSubjectItemActionListener {
-        void onSubjectSelected(/*SubjectData sub*//*TODO not needed yet*/);
+        void onSubjectSelected(long subjectId);
     }
 }

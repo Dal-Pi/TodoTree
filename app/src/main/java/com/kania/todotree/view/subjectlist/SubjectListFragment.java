@@ -22,8 +22,6 @@ import com.kania.todotree.data.TodoProvider;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import javax.security.auth.Subject;
-
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -36,6 +34,8 @@ public class SubjectListFragment extends Fragment
 
     private View mLayoutAll;
     private Button mBtnAll;
+
+    private OnShowingSubjectListener mListener;
 
     public static SubjectListFragment newInstance() {
         SubjectListFragment fragment = new SubjectListFragment();
@@ -67,6 +67,9 @@ public class SubjectListFragment extends Fragment
                 TodoProvider.getInstance().setAllSubjectVisibility(!bAllShowing);
                 decorateAllBtnByShowing(!bAllShowing);
                 mAdapter.notifyDataSetChanged();
+                if (mListener != null) {
+                    mListener.onSelectAllSubject();
+                }
             }
         });
 
@@ -94,34 +97,31 @@ public class SubjectListFragment extends Fragment
             mLayoutAll.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
         }
     }
-    /*
-    private void decorateItemByShowing(final SubjectViewHolder holder) {
-        //TODO change design
-        if (holder.mItem.isShowing()) {
-            holder.mBtnTitle.setTextColor(ContextCompat.getColor(mContext, R.color.white));
-            holder.mLayout.setBackgroundColor(holder.mItem.getColor());
-        } else {
-            holder.mBtnTitle.setTextColor(holder.mItem.getColor());
-            holder.mLayout.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
-        }
-    }
-     */
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        if (context instanceof OnShowingSubjectListener) {
+            mListener = (OnShowingSubjectListener)context;
+        } else {
+            Log.e(TodoTree.TAG, "[SubjectListFragment::onAttach] context do not implement OnShowingSubjectListener");
+        }
         TodoProvider.getInstance().attachObserver(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener = null;
         TodoProvider.getInstance().detachObserver(this);
     }
 
     @Override
-    public void onSubjectSelected() {
+    public void onSubjectSelected(long subjectId) {
         decorateAllBtnByShowing(checkAllSubjectShowing());
+        if (mListener != null) {
+            mListener.onSelectSubject(subjectId);
+        }
     }
 
     @Override
@@ -140,7 +140,7 @@ public class SubjectListFragment extends Fragment
     }
 
     @Override
-    public void onRefreshTodo() {
+    public void onShowingTodoRefreshed() {
         // do nothing
     }
 
@@ -160,5 +160,10 @@ public class SubjectListFragment extends Fragment
     public void onSubjectUpdated(ArrayList<Long> updates) {
         //TODO handle each todo
         mAdapter.notifyDataSetChanged();
+    }
+
+    public interface OnShowingSubjectListener {
+        void onSelectAllSubject();
+        void onSelectSubject(long subjectId);
     }
 }

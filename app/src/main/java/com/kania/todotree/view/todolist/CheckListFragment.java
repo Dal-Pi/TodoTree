@@ -21,6 +21,7 @@ import com.kania.todotree.data.RequestTodoData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
 import com.kania.todotree.view.common.EditTodoDialog;
+import com.kania.todotree.view.subjectlist.SubjectListFragment;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -171,7 +172,7 @@ public class CheckListFragment extends Fragment
     }
 
     @Override
-    public void onRefreshTodo() {
+    public void onShowingTodoRefreshed() {
         mAdapter.notifyDataSetChanged();
     }
 
