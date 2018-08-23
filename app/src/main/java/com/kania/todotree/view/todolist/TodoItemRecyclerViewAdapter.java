@@ -159,7 +159,14 @@ public class TodoItemRecyclerViewAdapter
     private void decorateTodoItem(final TodoViewHolder holder, final TodoData todo) {
         int color = TodoProvider.getInstance().getSubject(todo.getSubject()).getColor();
         holder.mDivider.setVisibility(todo.getDepth() == 0 ? View.VISIBLE : View.GONE);
-        holder.mDueDate.setText(TodoDateUtil.getFormatedDateString(mContext, todo.getDueDate()));
+        if (todo.getDueDate() != TodoData.NON_DUEDATE) {
+            holder.mDueDate.setVisibility(View.VISIBLE);
+            //TODO what?
+            holder.mDueDate.setText(mContext.getString(R.string.item_due_date_prefix)
+                    + TodoDateUtil.getFormatedDateString(mContext, todo.getDueDate()));
+        } else {
+            holder.mDueDate.setVisibility(View.GONE);
+        }
         holder.mUpdated.setText(TodoDateUtil
                 .getFormatedDateAndTimeString(mContext, todo.getLastUpdated()));
         decorateCheckbox(holder.mCheckBox, todo);

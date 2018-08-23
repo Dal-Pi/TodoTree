@@ -11,7 +11,7 @@
 
     <string name="default_subject_name">Default</string>
 
-    <string name="subject_list_all_title">All</string>
+    <string name="subject_list_all_title">ALL</string>
 
     <string name="item_menu_add_sub_todo_hint">Input sub-todo title</string>
     <string name="item_menu_btn_add_sub_todo">@string/base_add</string>
@@ -19,6 +19,7 @@
     <string name="item_menu_btn_done">Done</string>
     <string name="item_menu_btn_edit">Edit</string>
     <string name="item_due_date_defualt">Due Date</string>
+    <string name="item_due_date_prefix">"Due Date : "</string>
     <string name="item_last_update_defualt">Updated</string>
 
     <string name="dialog_loading_title">Loading...</string>

@@ -13,6 +13,7 @@
         android:id="@+id/subject_item_btn_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textAllCaps="false"
         android:text="@string/base_subject"/>
 
 </LinearLayout>
