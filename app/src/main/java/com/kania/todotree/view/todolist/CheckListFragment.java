@@ -18,10 +18,10 @@ import android.view.inputmethod.InputMethodManager;
 import com.kania.todotree.R;
 import com.kania.todotree.TodoTree;
 import com.kania.todotree.data.RequestTodoData;
+import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.data.TodoData;
 import com.kania.todotree.data.TodoProvider;
 import com.kania.todotree.view.common.EditTodoDialog;
-import com.kania.todotree.view.subjectlist.SubjectListFragment;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,7 +32,8 @@ public class CheckListFragment extends Fragment
         implements TodoProvider.IDataObserver,
         TodoItemRecyclerViewAdapter.OnTodoItemActionListener {
     private static final String ARG_COLUMN_COUNT = "column-count";
-    private static final String ARG_SELECTED_ID = "selected_id";
+    private static final String ARG_SELECTED_TODO = "selected_todo_id";
+    private static final String ARG_SELECTED_SUBJECT = "selected_subject_id";
     private int mColumnCount = 1;
 
     private RecyclerView mCheckListView;
@@ -40,7 +41,10 @@ public class CheckListFragment extends Fragment
 
     private FloatingActionButton mFab;
 
+    private long mSelectedShowingSubjectId;
+
     public CheckListFragment() {
+        mSelectedShowingSubjectId = SubjectData.NON_ID;
     }
 
     // TODO: Customize parameter initialization
@@ -77,9 +81,12 @@ public class CheckListFragment extends Fragment
                 TodoProvider.getInstance().getShowingTodoList());
         mAdapter.setHasStableIds(true);
         mAdapter.attachSelectListener(this);
+        //TODO make method
         if (savedInstanceState != null) {
-            long selectedId = savedInstanceState.getLong(ARG_SELECTED_ID, TodoData.NON_ID);
+            long selectedId = savedInstanceState.getLong(ARG_SELECTED_TODO, TodoData.NON_ID);
             mAdapter.setSelectedIdForInit(selectedId);
+            mSelectedShowingSubjectId =
+                    savedInstanceState.getLong(ARG_SELECTED_SUBJECT, SubjectData.NON_ID);
         }
         mCheckListView.setAdapter(mAdapter);
         mCheckListView.setHasFixedSize(true);
@@ -113,7 +120,8 @@ public class CheckListFragment extends Fragment
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putLong(ARG_SELECTED_ID, mAdapter.getSelectedId());
+        outState.putLong(ARG_SELECTED_TODO, mAdapter.getSelectedId());
+        outState.putLong(ARG_SELECTED_SUBJECT, mSelectedShowingSubjectId);
     }
 
     @Override
@@ -203,7 +211,8 @@ public class CheckListFragment extends Fragment
     }
 
     private void showEditTodoDialog(long todoId) {
-        DialogFragment editTodoDialog = EditTodoDialog.newInstance(todoId);
+        DialogFragment editTodoDialog =
+                EditTodoDialog.newInstance(todoId, mSelectedShowingSubjectId);
         editTodoDialog.show(getActivity().getSupportFragmentManager(),
                 EditTodoDialog.class.getName());
     }
@@ -214,6 +223,10 @@ public class CheckListFragment extends Fragment
             return true;
         }
         return false;
+    }
+
+    public void setSelectedShowingSubjectId(long id) {
+        mSelectedShowingSubjectId = id;
     }
 
     private void hideInputMethod() {

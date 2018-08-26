@@ -23,7 +23,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/ic_add_circle_black_48dp"
+                    android:src="@drawable/baseline_add_circle_black_36"
                     android:background="?selectableItemBackgroundBorderless"/>
                 <Spinner
                     android:id="@+id/dialog_add_todo_spinner_subject"

@@ -4,7 +4,13 @@
     tools:context="com.kania.todotree.view.MainActivity">
     <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
+        android:orderInCategory="200"
         android:title="@string/action_settings"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_main_sort"
+        android:orderInCategory="100"
+        android:title="@string/action_sort"
+        android:icon="@drawable/baseline_sort_white_48"
+        app:showAsAction="ifRoom" />
 </menu>

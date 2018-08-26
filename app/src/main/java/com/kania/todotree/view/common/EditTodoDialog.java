@@ -61,10 +61,11 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
         // Required empty public constructor
     }
 
-    public static EditTodoDialog newInstance(long baseTodoId) {
+    public static EditTodoDialog newInstance(long baseTodoId, long baseSubjectId) {
         EditTodoDialog fragment = new EditTodoDialog();
         Bundle args = new Bundle();
         args.putLong(ARG_BASE_TODO_ID, baseTodoId);
+        args.putLong(ARG_SELECTED_SUBJECT_ID, baseSubjectId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -83,17 +84,19 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
             mEditedName = savedInstanceState.getString(ARG_EDITED_NAME);
             mSetDueDate = savedInstanceState.getLong(ARG_SET_DUE_DATE);
         } else {
-            if (getArguments() != null)
+            if (getArguments() != null) {
                 mBaseTodoId = getArguments().getLong(ARG_BASE_TODO_ID);
-            else
+                mSelectedSubjectId = getArguments().getLong(ARG_SELECTED_SUBJECT_ID);
+            } else {
                 mBaseTodoId = TodoData.NON_ID;
+                mSelectedSubjectId = SubjectData.NON_ID;
+            }
             if (isEditDialog()) {
                 TodoData baseTodo = TodoProvider.getInstance().getTodo(mBaseTodoId);
-                mSelectedSubjectId = baseTodo.getSubject();
+                mSelectedSubjectId = baseTodo.getSubject(); //overwrite
                 mEditedName = baseTodo.getName();
                 mSetDueDate = baseTodo.getDueDate();
             } else {
-                mSelectedSubjectId = SubjectData.NON_ID;
                 mEditedName = "";
                 mSetDueDate = TodoData.NON_DUEDATE;
             }

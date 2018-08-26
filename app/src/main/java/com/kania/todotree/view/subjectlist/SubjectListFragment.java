@@ -68,7 +68,7 @@ public class SubjectListFragment extends Fragment
                 decorateAllBtnByShowing(!bAllShowing);
                 mAdapter.notifyDataSetChanged();
                 if (mListener != null) {
-                    mListener.onSelectAllSubject();
+                    mListener.onChangeSelectedSubject(SubjectData.NON_ID);
                 }
             }
         });
@@ -120,7 +120,10 @@ public class SubjectListFragment extends Fragment
     public void onSubjectSelected(long subjectId) {
         decorateAllBtnByShowing(checkAllSubjectShowing());
         if (mListener != null) {
-            mListener.onSelectSubject(subjectId);
+            boolean isSelectedSubjectShowing =
+                    TodoProvider.getInstance().getSubject(subjectId).isShowing();
+            mListener.onChangeSelectedSubject(
+                    isSelectedSubjectShowing ? subjectId : SubjectData.NON_ID);
         }
     }
 
@@ -163,7 +166,6 @@ public class SubjectListFragment extends Fragment
     }
 
     public interface OnShowingSubjectListener {
-        void onSelectAllSubject();
-        void onSelectSubject(long subjectId);
+        void onChangeSelectedSubject(long onlyOneSubject);
     }
 }

@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.kania.todotree.R;
+import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.view.subjectlist.SubjectListFragment;
 import com.kania.todotree.view.todolist.CheckListFragment;
 
@@ -95,6 +96,10 @@ public class MainActivity extends AppCompatActivity
         }
         return false;
     }
+    private void setSelectedSubjectId(long id) {
+        if (mCheckListFragment != null)
+            mCheckListFragment.setSelectedShowingSubjectId(id);
+    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -138,12 +143,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSelectAllSubject() {
+    public void onChangeSelectedSubject(long onlyOneSubject) {
         cancelSelectIfSelected();
-    }
-
-    @Override
-    public void onSelectSubject(long subjectId) {
-        cancelSelectIfSelected();
+        setSelectedSubjectId(onlyOneSubject);
     }
 }

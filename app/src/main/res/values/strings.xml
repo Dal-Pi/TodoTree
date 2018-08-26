@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">TodoTree</string>
+
+
     <string name="action_settings">Settings</string>
+    <string name="action_sort">Sort</string>
 
     <string name="base_add">Add</string>
     <string name="base_update">Update</string>
