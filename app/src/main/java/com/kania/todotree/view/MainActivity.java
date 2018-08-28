@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.kania.todotree.R;
-import com.kania.todotree.data.SubjectData;
 import com.kania.todotree.view.subjectlist.SubjectListFragment;
 import com.kania.todotree.view.todolist.CheckListFragment;
 
@@ -96,9 +95,10 @@ public class MainActivity extends AppCompatActivity
         }
         return false;
     }
-    private void setSelectedSubjectId(long id) {
+    //TODO showing must handle this interface.
+    private void showingSubjectSelect(long id) {
         if (mCheckListFragment != null)
-            mCheckListFragment.setSelectedShowingSubjectId(id);
+            mCheckListFragment.showingSubjectSelect(id);
     }
 
     @Override
@@ -145,6 +145,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onChangeSelectedSubject(long onlyOneSubject) {
         cancelSelectIfSelected();
-        setSelectedSubjectId(onlyOneSubject);
+        showingSubjectSelect(onlyOneSubject);
     }
 }

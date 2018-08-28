@@ -225,8 +225,23 @@ public class CheckListFragment extends Fragment
         return false;
     }
 
-    public void setSelectedShowingSubjectId(long id) {
-        mSelectedShowingSubjectId = id;
+    public void showingSubjectSelect(long id) {
+        if (id != SubjectData.NON_ID) {
+            mSelectedShowingSubjectId = id;
+            return;
+        }
+        TodoProvider provider = TodoProvider.getInstance();
+        long candidate = SubjectData.NON_ID;
+        for (SubjectData subject : provider.getAllSubject()) {
+            if (subject.isShowing()) {
+                if (candidate != SubjectData.NON_ID) {
+                    candidate = SubjectData.NON_ID;
+                    break;
+                }
+                candidate = subject.getId();
+            }
+        }
+        mSelectedShowingSubjectId = candidate;
     }
 
     private void hideInputMethod() {
