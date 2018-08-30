@@ -115,6 +115,7 @@ public class TodoProvider implements ITodoProvider {
 
     private void updateShowingList() {
         mShowingTodoList.clear();
+        //TODO sort! (change arrangeTodoRecur()) *****
         for (TodoData todo : mAllTodoList) {
             if (mSubjectMap.get(todo.getSubject()).isShowing()) {
                 mShowingTodoList.add(todo);

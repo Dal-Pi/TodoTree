@@ -196,14 +196,16 @@ public class EditTodoDialog extends DialogFragment implements TodoProvider.IData
     private void setDueDateLayout(boolean isSetDueDate) {
         if (isSetDueDate) {
             mLayoutDueDate.setVisibility(View.VISIBLE);
+            if (mSetDueDate == TodoData.NON_DUEDATE) {
+                Date todayWithoutTime =
+                        TodoDateUtil.removeTimeFromDate(TodoDateUtil.getCurrentDate());
+                mSetDueDate = todayWithoutTime.getTime();
+            }
             mBtnDueDate.setText(TodoDateUtil.getFormatedDateString(getContext(), mSetDueDate));
         } else {
             mLayoutDueDate.setVisibility(View.GONE);
-            Calendar today = Calendar.getInstance();
-            Date todayWithoutTime = TodoDateUtil.removeTimeFromDate(today.getTime());
-            mSetDueDate = todayWithoutTime.getTime();
+            mSetDueDate = TodoData.NON_DUEDATE;
         }
-        mBtnDueDate.setText(TodoDateUtil.getFormatedDateString(getContext(), mSetDueDate));
     }
 
     private void setDialogButtonClickEvent(AlertDialog.Builder builder, View dialogLayout) {
