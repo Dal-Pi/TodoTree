@@ -20,8 +20,8 @@ public class TodoProvider implements ITodoProvider {
 
     private static TodoProvider mInstance;
 
-    private ArrayList<TodoData> mRootTodoList;
-    private ArrayList<TodoData> mAllTodoList;
+    private ArrayList<RootTodoData> mRootTodoList;
+    private HashMap<Long, RootTodoData> mRootTodoMap;
     private ArrayList<TodoData> mShowingTodoList;
     private HashMap<Long, TodoData> mTodoMap;
     private ArrayList<SubjectData> mSubjectList;
@@ -42,7 +42,7 @@ public class TodoProvider implements ITodoProvider {
         mSubjectMap = new HashMap<>();
 
         mRootTodoList = new ArrayList<>();
-        mAllTodoList = new ArrayList<>();
+        mRootTodoMap = new HashMap<>();
         mTodoMap = new HashMap<>();
 
         mShowingTodoList = new ArrayList<>();
@@ -86,6 +86,24 @@ public class TodoProvider implements ITodoProvider {
     }
 
     private void arrangeTodo(ArrayList<TodoData> todos) {
+        for (TodoData todo : todos) {
+            mTodoMap.put(todo.getId(), todo);
+            if (todo.isRootTodo()) {
+                RootTodoData rootData = new RootTodoData(todo);
+                mRootTodoList.add(rootData);
+                mRootTodoMap.put(todo.getId(), rootData);
+            }
+        }
+        for (long todoId : mTodoMap.keySet()) {
+            TodoData todo = mTodoMap.get(todoId);
+            if (todo.isRootTodo() == false)
+                mTodoMap.get(todo.getParent()).insertChild(todoId);
+        }
+        arrangeRootList();
+        updateShowingList();
+
+        //TODO refecor
+        /*
         for (TodoData todo : todos)
         {
             if (todo.isRootTodo())
@@ -100,19 +118,60 @@ public class TodoProvider implements ITodoProvider {
         }
         for (TodoData root : mRootTodoList) {
             root.setDepth(0);
-            arrangeTodoRecur(root);
+            arrangeTodoRecur(mAllTodoList, root);
         }
         updateShowingList();
+        */
     }
-    private void arrangeTodoRecur(TodoData target) {
-        mAllTodoList.add(target);
+    private void arrangeRootList() {
+        sortRootTodoListByPolicy();
+        for (RootTodoData rootData : mRootTodoList) {
+            rootData.todo.setDepth(0);
+            rootData.allTodoList.clear();
+            rootData.hasTodayTodo = arrangeTodoRecur(rootData, rootData.todo);
+        }
+    }
+    private boolean arrangeTodoRecur(RootTodoData rootData, TodoData target) {
+        rootData.allTodoList.add(target);
+
+        boolean hasToday = TodoDateUtil.isToday(target.getDueDate());
+        sortTodoListByPolicy(target.getChildren());
         for (long todoId : target.getChildren()) {
             TodoData todo = mTodoMap.get(todoId);
             todo.setDepth(target.getDepth() + 1);
-            arrangeTodoRecur(todo);
+            boolean ret = arrangeTodoRecur(rootData, todo);
+            if (ret) hasToday = true;
+        }
+        return hasToday;
+    }
+
+    private void sortRootTodoListByPolicy() {
+        //TODO
+    }
+    private void sortTodoListByPolicy(ArrayList<Long> todoIdList) {
+        //TODO
+    }
+    /*
+    private void arrangeTodoRecur(ArrayList<TodoData> targetList, TodoData target) {
+        targetList.add(target);
+        for (long todoId : target.getChildren()) {
+            TodoData todo = mTodoMap.get(todoId);
+            todo.setDepth(target.getDepth() + 1);
+            arrangeTodoRecur(targetList, todo);
+        }
+    }
+    */
+
+    private void updateShowingList() {
+        mShowingTodoList.clear();
+        for (RootTodoData rootData : mRootTodoList) {
+            if (mSubjectMap.get(rootData.todo.getSubject()).isShowing()) {
+                mShowingTodoList.addAll(rootData.allTodoList);
+            }
         }
     }
 
+    /*
     private void updateShowingList() {
         mShowingTodoList.clear();
         //TODO sort! (change arrangeTodoRecur()) *****
@@ -122,6 +181,7 @@ public class TodoProvider implements ITodoProvider {
             }
         }
     }
+    */
 
     @Override
     public SubjectData getSubject(long id) {
@@ -149,39 +209,71 @@ public class TodoProvider implements ITodoProvider {
     private void insertTodo(TodoData todo) {
         mTodoMap.put(todo.getId(), todo);
         int pos;
-        if (todo.getParent() == ITodoData.NON_ID) {
-            Log.d("todo_tree", "[insertTodo] " + todo.getId() + "is the root Todo");
+        if (todo.isRootTodo()) {
+            Log.d(TodoTree.TAG, "[TodoProvider::insertTodo] " + todo.getId() + "is the root Todo");
             pos = 0;
+            RootTodoData rootData = new RootTodoData(todo);
+            rootData.allTodoList.add(todo);
+            mRootTodoList.add(pos, rootData);
+            mRootTodoMap.put(todo.getId(), rootData);
+            /*
             mRootTodoList.add(pos, todo);
             mAllTodoList.add(pos, todo);
+            */
             mShowingTodoList.add(pos, todo);
+
+            //TODO isToday does not need to evaluate. but needs to complete data?
         } else {
+            //TODO isToday does not need to evaluate. but needs to complete data?
+
+
             TodoData parent = mTodoMap.get(todo.getParent());
-            Log.d("todo_tree", "[insertTodo] find parent:" + parent.getId());
+            Log.d(TodoTree.TAG, "[TodoProvider::insertTodo] find parent:" + parent.getId());
             int childrenCount = getChildrenCount(parent);
-            Log.d("todo_tree", "[insertTodo] " + parent.getId() + "'s children count = " + childrenCount);
+            Log.d(TodoTree.TAG, "[TodoProvider::insertTodo] " + parent.getId() + "'s children count = " + childrenCount);
             parent.insertChild(todo.getId());
-            evaluateDepth(todo);
+            long rootId = evaluateDepthAndGetRootId(todo);
+            RootTodoData rootData = mRootTodoMap.get(rootId);
+            pos = rootData.allTodoList.indexOf(parent) + childrenCount + 1;
+            rootData.allTodoList.add(pos, todo);
+
+            int showingPos = mShowingTodoList.indexOf(parent) + childrenCount + 1;
+            if (mShowingTodoList.size() >= showingPos) {
+                mShowingTodoList.add(showingPos, todo);
+            } else {
+                Log.e(TodoTree.TAG, "[TodoProvider::insertTodo] position over");
+            }
+            /*
             pos = mAllTodoList.indexOf(parent) + childrenCount + 1;
             if (mAllTodoList.size() >= pos) {
                 mAllTodoList.add(pos, todo);
                 int showingPos = mShowingTodoList.indexOf(parent) + childrenCount + 1;
                 mShowingTodoList.add(showingPos, todo);
             } else {
-                Log.e("todo_tree", "[insertTodo] position over");
+                Log.e(TodoTree.TAG, "[TodoProvider::insertTodo] position over");
             }
+            */
         }
     }
 
-    private void evaluateDepth(TodoData todo) {
+    private long getRootId(TodoData todo) {
+        TodoData targetTodo = todo;
+        while (targetTodo.isRootTodo() == false) {
+            targetTodo = mTodoMap.get(targetTodo.getParent());
+        }
+        return targetTodo.getId();
+    }
+
+    private long evaluateDepthAndGetRootId(TodoData todo) {
         int evaluated = 0;
         TodoData targetTodo = todo;
         //TODO max depth
-        while ( (targetTodo.getParent() != TodoData.NON_ID) /* && (evaluated < ITodoData.MAX_DEPTH) */) {
+        while ( (targetTodo.isRootTodo() == false) /* && (evaluated < ITodoData.MAX_DEPTH) */) {
             evaluated++;
             targetTodo = mTodoMap.get(targetTodo.getParent());
         }
         todo.setDepth(evaluated);
+        return targetTodo.getId();
     }
 
     //TODO change as ID
@@ -189,17 +281,16 @@ public class TodoProvider implements ITodoProvider {
         if (todo.isRootTodo() == false) {
             TodoData parent = mTodoMap.get(todo.getParent());
             parent.removeChild(todo.getId());
+            RootTodoData rootData = mRootTodoMap.get(getRootId(todo));
+            rootData.allTodoList.remove(todo);
         }
         if (todo.isRootTodo()) {
-            mRootTodoList.remove(todo);
+            RootTodoData rootData = mRootTodoMap.get(todo.getId());
+            mRootTodoList.remove(rootData);
+            mRootTodoMap.remove(rootData);
         }
         mShowingTodoList.remove(todo);
-        mAllTodoList.remove(todo);
         mTodoMap.remove(todo.getId());
-    }
-
-    public ArrayList<TodoData> getAllTodo() {
-        return mAllTodoList;
     }
 
     public ArrayList<SubjectData> getAllSubject() {
@@ -506,8 +597,8 @@ public class TodoProvider implements ITodoProvider {
     //TODO remove debug
     public void logAllTodo() {
         Log.d(TodoTree.TAG, "-----Todo List start-----");
-        for (TodoData rootTodo : mRootTodoList) {
-            logTodoRecur(rootTodo);
+        for (RootTodoData rootData : mRootTodoList) {
+            logTodoRecur(rootData.todo);
         }
         Log.d(TodoTree.TAG, "-----Todo List end-----");
     }
@@ -534,5 +625,15 @@ public class TodoProvider implements ITodoProvider {
         void onSubjectRemoved(ArrayList<Long> removes);
         //TODO send request datas
         void onSubjectUpdated(ArrayList<Long> updates);
+    }
+
+    class RootTodoData {
+        TodoData todo;
+        ArrayList<TodoData> allTodoList = new ArrayList<>();
+        boolean hasTodayTodo = false;
+
+        RootTodoData(TodoData root) {
+            todo = root;
+        }
     }
 }

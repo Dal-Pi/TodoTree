@@ -102,6 +102,12 @@ public class TodoDateUtil {
 
     }
 
+    public static boolean isToday(long dueDate) {
+        long todayWithoutTime = removeTimeFromDate(getCurrentDate()).getTime();
+        //TODO do need to remove time from dueDate?
+        return (todayWithoutTime == dueDate);
+    }
+
     /*
     public static String getFormatedTime(Context context, long todoStartTime, long todoEndTime) {
         String ret = "";
